@@ -119,7 +119,10 @@ export default defineConfig(({ command, mode }) => {
       UnoCSS(),
       AutoImport({
         imports: ['vue', 'uni-app'],
+        // Vue 3.5 APIs are included in the latest preset but unavailable in Vue 3.4.
+        ignore: ['getCurrentWatcher', 'onWatcherCleanup', 'useId', 'useTemplateRef'],
         dts: 'src/types/auto-import.d.ts',
+        dtsMode: 'overwrite',
         dirs: ['src/hooks'], // 自动导入 hooks
         vueTemplate: true, // default false
       }),

@@ -1,0 +1,19 @@
+[mcp_servers.wot-ui]
+command = "pnpm"
+args = [
+  "run",
+  "wot:mcp",
+]
+cwd = "."
+enabled = true
+required = false
+env = { WOT_DISABLE_UPDATE_CHECK = "1" }
+enabled_tools = [
+  "wot_list",
+  "wot_info",
+  "wot_doc",
+  "wot_demo",
+  "wot_token",
+  "wot_changelog",
+  "wot_lint",
+]
