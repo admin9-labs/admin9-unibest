@@ -129,8 +129,13 @@ describe('member HTTP authentication', () => {
       requestId: 'replay-2',
       message: 'Token rejected',
     })
-    expect(uni.showToast).toHaveBeenCalledTimes(1)
-    expect(uni.showToast).toHaveBeenCalledWith({ icon: 'none', title: '登录已过期，请重新登录' })
+    expect(uni.showToast).not.toHaveBeenCalled()
+    expect(uni.showModal).toHaveBeenCalledTimes(1)
+    expect(uni.showModal).toHaveBeenCalledWith({
+      title: '登录已过期',
+      content: '请重新登录\n\n请求 ID：replay-2',
+      showCancel: false,
+    })
   })
 
   it('preserves refresh failure diagnostics without a duplicate normal toast', async () => {
@@ -149,13 +154,22 @@ describe('member HTTP authentication', () => {
       requestId: 'refresh-failed',
       message: 'Refresh rejected',
     })
-    expect(uni.showToast).toHaveBeenCalledTimes(1)
+    expect(uni.showToast).not.toHaveBeenCalled()
+    expect(uni.showModal).toHaveBeenCalledTimes(1)
+    expect(uni.showModal).toHaveBeenCalledWith({
+      title: '登录已过期',
+      content: '请重新登录\n\n请求 ID：refresh-failed',
+      showCancel: false,
+    })
   })
 
-  it('rejects all waiters, clears once, and shows one toast when refresh fails', async () => {
+  it('rejects all waiters, clears once, and shows one prompt when refresh fails', async () => {
     establishSession('expired-jwt', 0)
     vi.mocked(uni.request).mockImplementation((options: CustomRequestOptions) => {
-      queueMicrotask(() => respond(options, 401, unauthorized()))
+      const body = options.url === '/api/auth/refresh'
+        ? { ...unauthorized(), request_id: 'concurrent-refresh-failed' }
+        : { ...unauthorized(), request_id: 'concurrent-resource-401' }
+      queueMicrotask(() => respond(options, 401, body))
       return {} as UniApp.RequestTask
     })
 
@@ -166,7 +180,11 @@ describe('member HTTP authentication', () => {
     expect(results.every(result => result.status === 'rejected')).toBe(true)
     expect(getSession()).toBeNull()
     expect(uni.removeStorageSync).toHaveBeenCalledTimes(1)
-    expect(uni.showToast).toHaveBeenCalledTimes(1)
+    expect(uni.showToast).not.toHaveBeenCalled()
+    expect(uni.showModal).toHaveBeenCalledTimes(1)
+    expect(uni.showModal).toHaveBeenCalledWith(expect.objectContaining({
+      content: '请重新登录\n\n请求 ID：concurrent-refresh-failed',
+    }))
   })
 
   it('never replays an old account request with a new account token', async () => {
@@ -327,7 +345,26 @@ describe('member HTTP authentication', () => {
 
     await expect(http({ url: '/api/auth/me', method: 'GET' })).rejects.toMatchObject({ statusCode: 500 })
     expect(getSession()?.accessToken).toBe('new-jwt')
-    expect(uni.showToast).toHaveBeenCalledWith({ icon: 'none', title: 'Server failure' })
+    expect(uni.showToast).not.toHaveBeenCalled()
+    expect(uni.showModal).toHaveBeenCalledWith({
+      title: '请求失败',
+      content: 'Server failure\n\n请求 ID：request-500',
+      showCancel: false,
+    })
+  })
+
+  it('keeps the original network error prompt when no request ID exists', async () => {
+    vi.mocked(uni.request).mockImplementation((options) => {
+      options.fail?.({ errMsg: 'request:fail' })
+      return {} as UniApp.RequestTask
+    })
+
+    await expect(http({ url: '/api/public', method: 'GET', auth: 'public' })).rejects.toMatchObject({
+      type: 'network',
+      message: '网络连接失败，请稍后重试',
+    })
+    expect(uni.showToast).toHaveBeenCalledWith({ icon: 'none', title: '网络连接失败，请稍后重试' })
+    expect(uni.showModal).not.toHaveBeenCalled()
   })
 
   it('clears only the matching session for account inactive errors', async () => {

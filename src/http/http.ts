@@ -107,15 +107,27 @@ async function refreshSession(identity: SessionIdentity) {
   return promise
 }
 
-function showError(error: HttpError) {
-  uni.showToast({ icon: 'none', title: error.message })
+function showErrorPrompt(error: HttpError, message: string, title: string) {
+  if (error.requestId) {
+    uni.showModal({
+      title,
+      content: `${message}\n\n请求 ID：${error.requestId}`,
+      showCancel: false,
+    })
+    return
+  }
+  uni.showToast({ icon: 'none', title: message })
 }
 
-function showAuthExpired() {
+function showError(error: HttpError) {
+  showErrorPrompt(error, error.message, '请求失败')
+}
+
+function showAuthExpired(error: HttpError) {
   if (authFailureShown)
     return
   authFailureShown = true
-  uni.showToast({ icon: 'none', title: '登录已过期，请重新登录' })
+  showErrorPrompt(error, '请重新登录', '登录已过期')
   setTimeout(() => {
     authFailureShown = false
   }, 0)
@@ -185,7 +197,7 @@ export async function http<T>(options: CustomRequestOptions): Promise<ApiEnvelop
         if (!cleared)
           throw new StaleSessionError()
         if (isExpired)
-          showAuthExpired()
+          showAuthExpired(recoveryHttpError)
         else if (!options.hideErrorToast)
           showError(recoveryHttpError)
         throw recoveryError
