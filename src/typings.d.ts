@@ -7,27 +7,6 @@ declare global {
     data: T
   }
 
-  // uni.uploadFile文件上传参数
-  interface IUniUploadFileOptions {
-    file?: File
-    files?: UniApp.UploadFileOptionFiles[]
-    filePath?: string
-    name?: string
-    formData?: any
-  }
-
-  interface IUserInfo {
-    nickname?: string
-    avatar?: string
-    /** 微信的 openid，非微信没有这个字段 */
-    openid?: string
-  }
-
-  interface IUserToken {
-    token: string
-    refreshToken?: string
-    refreshExpire?: number
-  }
 }
 
 // 扩展 @uni-helper/vite-plugin-uni-pages 的 definePage 参数类型

@@ -29,8 +29,6 @@ const uniMock = {
   setStorage: vi.fn(),
   removeStorage: vi.fn(),
   request: vi.fn(),
-  uploadFile: vi.fn(),
-  chooseImage: vi.fn(),
   getSystemInfoSync: vi.fn().mockReturnValue({ platform: 'devtools' }),
   getSystemInfo: vi.fn(),
   onNetworkStatusChange: vi.fn(),
@@ -46,6 +44,24 @@ Object.defineProperty(globalThis, 'uni', {
 // getCurrentPages 是 uni-app 的全局函数（不在 uni 对象上）
 Object.defineProperty(globalThis, 'getCurrentPages', {
   value: vi.fn().mockReturnValue([{ route: '/pages/index/index' }]),
+  writable: true,
+  configurable: true,
+})
+
+Object.defineProperty(globalThis, 'definePage', {
+  value: vi.fn(),
+  writable: true,
+  configurable: true,
+})
+
+Object.defineProperty(globalThis, 'onLoad', {
+  value: vi.fn(),
+  writable: true,
+  configurable: true,
+})
+
+Object.defineProperty(globalThis, 'onShow', {
+  value: vi.fn(),
   writable: true,
   configurable: true,
 })

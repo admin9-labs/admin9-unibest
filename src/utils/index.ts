@@ -1,9 +1,10 @@
 /* eslint-disable style/indent */
 import type { PageMetaDatum, SubPackages } from '@uni-helper/vite-plugin-uni-pages'
 /** 如果是运行抖音小程序，就不引入 @uni-helper/uni-env，否则运行报错（找不到process) */
-import { isMpWeixin } from '@uni-helper/uni-env'
-
 import { pages, subPackages } from '@/pages.json'
+import { parseUrlToObj } from './url'
+
+export { ensureDecodeURIComponent, parseUrlToObj } from './url'
 
 export type PageInstance = Page.PageInstance<AnyObject, object> & { $page: Page.PageInstance<AnyObject, object> & { fullPath: string } }
 
@@ -41,35 +42,6 @@ export function currRoute() {
   return parseUrlToObj(fullPath)
 }
 
-export function ensureDecodeURIComponent(url: string) {
-  if (url.startsWith('%')) {
-    return ensureDecodeURIComponent(decodeURIComponent(url))
-  }
-  return url
-}
-/**
- * 解析 url 得到 path 和 query
- * 比如输入url: /pages/login/login?redirect=%2Fpages%2Fdemo%2Fbase%2Froute-interceptor
- * 输出: {path: /pages/login/login, query: {redirect: /pages/demo/base/route-interceptor}}
- */
-export function parseUrlToObj(url: string) {
-  const [path, queryStr] = url.split('?')
-  // console.log(path, queryStr)
-
-  if (!queryStr) {
-    return {
-      path,
-      query: {},
-    }
-  }
-  const query: Record<string, string> = {}
-  queryStr.split('&').forEach((item) => {
-    const [key, value] = item.split('=')
-    // console.log(key, value)
-    query[key] = ensureDecodeURIComponent(value) // 这里需要统一 decodeURIComponent 一下，可以兼容h5和微信y
-  })
-  return { path, query }
-}
 /**
  * 得到所有的需要登录的 pages，包括主包和分包的
  * 这里设计得通用一点，可以传递 key 作为判断依据，默认是 excludeLoginPath, 与 route-block 配对使用
@@ -114,35 +86,6 @@ export function getCurrentPageI18nKey() {
   console.log(currPage.style.navigationBarTitleText)
   return currPage.style?.navigationBarTitleText || ''
 }
-
-/**
- * 根据微信小程序当前环境，判断应该获取的 baseUrl
- */
-export function getEnvBaseUrl() {
-  // 默认请求地址。微信小程序如果没有配置专用地址，也会回退到这个地址。
-  let baseUrl = import.meta.env.VITE_SERVER_BASEURL
-
-  // 微信小程序端环境区分
-  if (isMpWeixin) {
-    const {
-      miniProgram: { envVersion },
-    } = uni.getAccountInfoSync()
-    const weixinBaseUrlMap: Record<string, string | undefined> = {
-      develop: import.meta.env.VITE_SERVER_BASEURL__WEIXIN_DEVELOP,
-      trial: import.meta.env.VITE_SERVER_BASEURL__WEIXIN_TRIAL,
-      release: import.meta.env.VITE_SERVER_BASEURL__WEIXIN_RELEASE,
-    }
-
-    baseUrl = weixinBaseUrlMap[envVersion] || baseUrl
-  }
-
-  return baseUrl
-}
-
-/**
- * 是否是双token模式
- */
-export const isDoubleTokenMode = import.meta.env.VITE_AUTH_MODE === 'double'
 
 /**
  * 首页路径，通过 page.json 里面的 type 为 home 的页面获取，如果没有，则默认是第一个页面

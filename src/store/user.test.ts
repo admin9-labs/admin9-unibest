@@ -1,71 +1,88 @@
-import { getUserInfo } from '@/api/login'
+import { getMember } from '@/api/member'
 import { describe, expect, it, vi } from 'vitest'
+import { clearSession, establishSession, getSessionIdentity, rotateSession } from '@/http/session'
 import { useUserStore } from './user'
 
-vi.mock('@/api/login', () => ({
-  getUserInfo: vi.fn(),
-}))
+vi.mock('@/api/member', () => ({ getMember: vi.fn() }))
+
+const member = {
+  id: 42,
+  name: 'Member',
+  email: 'member@example.test',
+  mobile: null,
+  is_active: true,
+  last_login_at: null,
+}
+
+const newerMember = { ...member, id: 84, name: 'New account' }
+
+function deferred<T>() {
+  let resolve!: (value: T) => void
+  const promise = new Promise<T>((resolvePromise) => {
+    resolve = resolvePromise
+  })
+  return { promise, resolve }
+}
 
 describe('useUserStore', () => {
-  it('初始状态：userId 为 -1，username 为空，avatar 为默认头像', () => {
+  it('starts without a member and stores only the read-only resource', () => {
     const store = useUserStore()
-    expect(store.userInfo.userId).toBe(-1)
-    expect(store.userInfo.username).toBe('')
-    expect(store.userInfo.nickname).toBe('')
-    expect(store.userInfo.avatar).toBe('/static/images/default-avatar.png')
+    expect(store.member).toBeNull()
+    store.setMember(member)
+    expect(store.member).toEqual(member)
+    expect(Object.keys(store.member!)).toEqual(['id', 'name', 'email', 'mobile', 'is_active', 'last_login_at'])
   })
 
-  it('setUserInfo：正确更新用户信息', () => {
+  it('fetches and clears the member', async () => {
+    establishSession('member-token', 3600)
+    vi.mocked(getMember).mockResolvedValue(member)
     const store = useUserStore()
-    store.setUserInfo({
-      userId: 1,
-      username: 'testuser',
-      nickname: 'Test',
-      avatar: 'https://example.com/avatar.png',
-    })
-    expect(store.userInfo.userId).toBe(1)
-    expect(store.userInfo.username).toBe('testuser')
-    expect(store.userInfo.avatar).toBe('https://example.com/avatar.png')
+    await store.fetchMember()
+    expect(store.member).toEqual(member)
+    store.clearMember()
+    expect(store.member).toBeNull()
   })
 
-  it('setUserInfo：avatar 为空字符串时使用默认头像', () => {
+  it('discards a member response that arrives after logout', async () => {
+    establishSession('account-a', 3600)
+    const request = deferred<typeof member>()
+    vi.mocked(getMember).mockReturnValueOnce(request.promise)
     const store = useUserStore()
-    store.setUserInfo({
-      userId: 2,
-      username: 'user2',
-      nickname: 'User2',
-      avatar: '',
-    })
-    expect(store.userInfo.avatar).toBe('/static/images/default-avatar.png')
+
+    const fetch = store.fetchMember()
+    clearSession()
+    request.resolve(member)
+
+    await expect(fetch).resolves.toBeUndefined()
+    expect(store.member).toBeNull()
   })
 
-  it('setUserAvatar：正确更新头像', () => {
+  it('does not overwrite a newer account with a late member response', async () => {
+    establishSession('account-a', 3600)
+    const request = deferred<typeof member>()
+    vi.mocked(getMember).mockReturnValueOnce(request.promise)
     const store = useUserStore()
-    store.setUserAvatar('https://example.com/new-avatar.png')
-    expect(store.userInfo.avatar).toBe('https://example.com/new-avatar.png')
+
+    const fetch = store.fetchMember()
+    establishSession('account-b', 3600)
+    store.setMember(newerMember)
+    request.resolve(member)
+
+    await expect(fetch).resolves.toBeUndefined()
+    expect(store.member).toEqual(newerMember)
   })
 
-  it('clearUserInfo：重置为初始状态并调用 uni.removeStorageSync', () => {
+  it('accepts a member response across token rotation in the same identity', async () => {
+    establishSession('old-token', 3600)
+    const request = deferred<typeof member>()
+    vi.mocked(getMember).mockReturnValueOnce(request.promise)
     const store = useUserStore()
-    store.setUserInfo({ userId: 1, username: 'u', nickname: 'U', avatar: 'a' })
 
-    store.clearUserInfo()
+    const fetch = store.fetchMember()
+    rotateSession(getSessionIdentity()!, 'new-token', 3600)
+    request.resolve(member)
 
-    expect(store.userInfo.userId).toBe(-1)
-    expect(store.userInfo.username).toBe('')
-    expect(uni.removeStorageSync).toHaveBeenCalledWith('user')
-  })
-
-  it('fetchUserInfo：调用 API 并将结果写入 store', async () => {
-    const store = useUserStore()
-    const mockUser = { userId: 42, username: 'api_user', nickname: 'API User', avatar: 'https://x.com/a.png' }
-    vi.mocked(getUserInfo).mockResolvedValue(mockUser)
-
-    await store.fetchUserInfo()
-
-    expect(store.userInfo.userId).toBe(42)
-    expect(store.userInfo.username).toBe('api_user')
-    expect(store.userInfo.nickname).toBe('API User')
-    expect(store.userInfo.avatar).toBe('https://x.com/a.png')
+    await expect(fetch).resolves.toEqual(member)
+    expect(store.member).toEqual(member)
   })
 })

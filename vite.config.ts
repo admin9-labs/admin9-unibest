@@ -80,7 +80,7 @@ export default defineConfig(({ command, mode }) => {
         extensions: ['vue'],
         deep: true, // 是否递归扫描子目录，
         directoryAsNamespace: false, // 是否把目录名作为命名空间前缀，true 时组件名为 目录名+组件名，
-        dts: 'src/types/components.d.ts', // 自动生成的组件类型声明文件路径（用于 TypeScript 支持）
+        dts: false, // 使用已纳入版本管理的稳定 Wot UI 全局组件声明
         resolvers: [WotResolver()],
       }),
       UniPages({
@@ -194,11 +194,8 @@ export default defineConfig(({ command, mode }) => {
       proxy: JSON.parse(VITE_APP_PROXY_ENABLE)
         ? {
             [VITE_APP_PROXY_PREFIX]: {
-              target: VITE_SERVER_BASEURL,
+              target: mode === 'development' ? 'http://admin9-api-laravel.test' : VITE_SERVER_BASEURL,
               changeOrigin: true,
-              // 后端有/api前缀则不做处理，没有则需要去掉
-              rewrite: path =>
-                path.replace(new RegExp(`^${VITE_APP_PROXY_PREFIX}`), ''),
             },
           }
         : undefined,

@@ -1,20 +1,14 @@
 # 登录页
-需要输入账号、密码/验证码的登录页。
+需要输入会员邮箱或手机号及密码的登录页。
 
 ## 适用性
 
-本页面主要用于 `h5` 和 `APP`。
-
-小程序通常有平台的登录方式 `uni.login` 通常用不到登录页，所以不适用于 `小程序`。（即默认情况下，小程序环境是不会走登录拦截逻辑的。）
-
-但是如果您的小程序也需要现实的 `登录页` 那也是可以使用的。
-
-在 `src/router/config.ts` 中有一个变量 `LOGIN_PAGE_ENABLE_IN_MP` 来控制是否在小程序中使用 `H5的登录页`。
+本项目在 H5 和微信小程序中使用同一套会员账号密码登录。`src/router/config.ts` 中的 `LOGIN_PAGE_ENABLE_IN_MP` 已启用，因此小程序也会进入登录拦截流程。
 
 更多信息请看 `src/router` 文件夹的内容。
 
 ## 登录跳转
 
-目前登录的跳转逻辑主要在 `src/router/interceptor.ts` 和 `src/pages/login/login.vue` 里面，默认会在登录后自动重定向到来源/配置的页面。
+登录跳转逻辑位于 `src/router/interceptor.ts` 和 `src/pages/auth/login.vue`。登录成功后优先消费 `redirect` 来源地址；tabbar 页面使用 `switchTab`，其他页面使用 `reLaunch`。
 
 如果与您的业务不符，您可以自行修改。

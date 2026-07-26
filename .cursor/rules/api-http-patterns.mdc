@@ -1,51 +1,23 @@
 # API 和 HTTP 请求规范
 
 ## HTTP 请求封装
-- 可以使用 `简单http` 或者 `alova` 或者 `@tanstack/vue-query` 进行请求管理
-- HTTP 配置在 [src/http/](mdc:src/http/) 目录下
-- `简单http` - [src/http/http.ts](mdc:src/http/http.ts)
-- `alova` - [src/http/alova.ts](mdc:src/http/alova.ts)
-- `vue-query` - [src/http/vue-query.ts](mdc:src/http/vue-query.ts)
-- 请求拦截器在 [src/http/interceptor.ts](mdc:src/http/interceptor.ts)
-- 支持请求重试、缓存、错误处理
+- 项目只使用一套会员 API 请求链，不新增并行请求库
+- 页面和 Store 调用 [src/api/member.ts](mdc:src/api/member.ts)
+- OpenAPI 生成代码位于 [src/service/](mdc:src/service/)，不得手工编辑
+- 生成代码通过 [src/http/openapi-request.ts](mdc:src/http/openapi-request.ts) 接入 [src/http/http.ts](mdc:src/http/http.ts)
+- `http.ts` 统一处理 Bearer token、401 刷新重放和错误提示
 
 ## API 接口规范
 - API 接口定义在 [src/api/](mdc:src/api/) 目录下
 - 按功能模块组织 API 文件
 - 使用 TypeScript 定义请求和响应类型
-- 支持 `简单http`、`alova` 和 `vue-query` 三种请求方式
-
-
-## 示例代码结构
-```typescript
-// API 接口定义
-export interface LoginParams {
-  username: string
-  password: string
-}
-
-export interface LoginResponse {
-  token: string
-  userInfo: UserInfo
-}
-
-// alova 方式
-export const login = (params: LoginParams) => 
-  http.Post<LoginResponse>('/api/login', params)
-
-// vue-query 方式
-export const useLogin = () => {
-  return useMutation({
-    mutationFn: (params: LoginParams) => 
-      http.post<LoginResponse>('/api/login', params)
-  })
-}
-```
+- `src/api` 作为稳定业务适配层，不让页面直接依赖生成代码
+- 使用 `pnpm openapi` 重新生成接口，使用 `pnpm openapi:check` 检查漂移
 
 ## 错误处理
-- 统一错误处理在拦截器中配置
-- 支持网络错误、业务错误、认证错误等
-- 自动处理 token 过期和刷新
+- 网络、HTTP、业务和认证错误统一由 `src/http/http.ts` 转换
+- 需要调用方自行提示时使用 `hideErrorToast`
+- 受保护请求遇到 401 时自动单飞刷新并最多重放一次
 ---
 globs: src/api/*.ts,src/http/*.ts
 ---

@@ -5,8 +5,11 @@ import { isMp } from '@uni-helper/uni-env'
  * 黑、白名单的配置，请看 config.ts 文件， EXCLUDE_LOGIN_PATH_LIST
  */
 import { useTokenStore } from '@/store/token'
-import { isPageTabbar, tabbarStore } from '@/tabbar/store'
-import { getAllPages, getLastPage, HOME_PAGE, parseUrlToObj } from '@/utils/index'
+import { navigateAfterLogin } from '@/pages/auth/navigation'
+import { tabbarStore } from '@/tabbar/store'
+import { getAllPages, getLastPage, HOME_PAGE } from '@/utils/index'
+import { parseUrlToObj } from '@/utils/url'
+import { stringifyQuery } from '@/http/tools/queryString'
 import { EXCLUDE_LOGIN_PATH_LIST, isNeedLoginMode, LOGIN_PAGE, LOGIN_PAGE_ENABLE_IN_MP } from './config'
 
 export const FG_LOG_ENABLE = false
@@ -73,21 +76,15 @@ export const navigateToInterceptor = {
         return true // 明确表示允许路由继续执行
       }
       else {
-        console.log('已经登录，但是还在登录页', myQuery.redirect)
-        const url = myQuery.redirect || HOME_PAGE
-        if (isPageTabbar(url)) {
-          uni.switchTab({ url })
-        }
-        else {
-          uni.navigateTo({ url })
-        }
+        FG_LOG_ENABLE && console.log('已经登录，但是还在登录页', myQuery.redirect)
+        navigateAfterLogin(myQuery.redirect || HOME_PAGE)
         return false // 明确表示阻止原路由继续执行
       }
     }
     let fullPath = path
 
     if (Object.keys(myQuery).length) {
-      fullPath += `?${Object.keys(myQuery).map(key => `${key}=${myQuery[key]}`).join('&')}`
+      fullPath += `?${stringifyQuery(myQuery)}`
     }
     const redirectUrl = `${LOGIN_PAGE}?redirect=${encodeURIComponent(fullPath)}`
 
