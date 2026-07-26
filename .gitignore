@@ -12,6 +12,10 @@ node_modules
 dist
 *.local
 
+# WeChat Mini Program upload credentials
+private.key
+private.*.key
+
 # Editor directories and files
 .idea
 *.suo

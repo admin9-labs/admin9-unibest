@@ -17,25 +17,20 @@
     "createdAt": "2026-07-25 14:11:05"
   },
   "packageManager": "pnpm@10.10.0",
-  "description": "unibest - 最好的 uniapp 开发模板",
-  "generate-time": "用户创建项目时生成",
-  "author": {
-    "name": "feige996",
-    "zhName": "菲鸽",
-    "email": "1020103647@qq.com",
-    "github": "https://github.com/feige996",
-    "gitee": "https://gitee.com/feige996"
-  },
+  "description": "Admin9 member application scaffold for H5 and WeChat Mini Program",
+  "author": "admin9-labs",
   "license": "MIT",
-  "homepage": "https://unibest.tech",
-  "repository": "https://github.com/feige996/unibest",
+  "homepage": "https://github.com/admin9-labs/admin9-unibest#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/admin9-labs/admin9-unibest.git"
+  },
   "bugs": {
-    "url": "https://github.com/feige996/unibest/issues",
-    "url-old": "https://github.com/codercup/unibest/issues"
+    "url": "https://github.com/admin9-labs/admin9-unibest/issues"
   },
   "engines": {
-    "node": ">=20",
-    "pnpm": ">=9"
+    "node": ">=22 <23",
+    "pnpm": "10.10.0"
   },
   "scripts": {
     "openapi": "openapi-ts",

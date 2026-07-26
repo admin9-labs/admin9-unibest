@@ -6,7 +6,7 @@ This Vue 3, TypeScript, and uni-app application targets H5 and WeChat Mini Progr
 
 ## Build, Test, and Development Commands
 
-Use Node.js 20 or newer and pnpm 9 or newer; the repository pins pnpm 10.10.0.
+Use Node.js `22.23.1` and pnpm `10.10.0`, as pinned by `.node-version` and `package.json`.
 
 - `pnpm install` installs dependencies and initializes generated base files.
 - `pnpm dev:h5` starts H5 development at `http://localhost:9000/`.
@@ -26,7 +26,7 @@ Vitest runs in `jsdom` with shared uni-app mocks from `src/test-setup.ts`. Name 
 
 ## Commit & Pull Request Guidelines
 
-This repository has no commit history yet, but Commitlint enforces Conventional Commits. Use messages such as `feat(auth): add password login` or `fix(tabbar): preserve selected item`. Keep commits scoped and include a Changeset when published behavior requires versioning. PRs should explain intent, list verification commands and target platforms, link relevant issues, and include screenshots or recordings for UI changes. Never commit credentials or place secrets in client-visible `VITE_*` variables; use ignored local overrides for machine-specific configuration.
+Commitlint enforces Conventional Commits. Use messages such as `feat(auth): add password login` or `fix(tabbar): preserve selected item`. Keep commits scoped and include a Changeset when published behavior requires versioning. PRs should explain intent, list verification commands and target platforms, link relevant issues, and include screenshots or recordings for UI changes. Never commit credentials or place secrets in client-visible `VITE_*` variables; use ignored local overrides for machine-specific configuration.
 
 ## Wot UI Workflow
 
