@@ -63,6 +63,7 @@ export default defineConfig(({ command, mode }) => {
     VITE_APP_PUBLIC_BASE,
     VITE_APP_PROXY_ENABLE,
     VITE_APP_PROXY_PREFIX,
+    VITE_APP_PROXY_TARGET,
     VITE_COPY_NATIVE_RES_ENABLE,
   } = env
   const { WECHAT_DEVTOOLS_CLI_PATH } = localEnv
@@ -194,7 +195,7 @@ export default defineConfig(({ command, mode }) => {
       proxy: JSON.parse(VITE_APP_PROXY_ENABLE)
         ? {
             [VITE_APP_PROXY_PREFIX]: {
-              target: mode === 'development' ? 'http://admin9-api-laravel.test' : VITE_SERVER_BASEURL,
+              target: VITE_APP_PROXY_TARGET || 'http://localhost:8000',
               changeOrigin: true,
             },
           }
