@@ -186,7 +186,7 @@
     "miniprogram-ci": "^2.1.26",
     "openapi-ts-request": "1.12.3",
     "picocolors": "^1.1.1",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.18",
     "postcss-html": "^1.8.0",
     "postcss-scss": "^4.0.9",
     "rollup-plugin-visualizer": "^6.0.3",
