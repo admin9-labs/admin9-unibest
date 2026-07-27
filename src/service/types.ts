@@ -201,9 +201,9 @@ export type LoginRequest = {
 
 export type MemberResource = {
   id: number;
-  name: unknown;
-  email: unknown;
-  mobile: unknown;
+  name: string | null;
+  email: string | null;
+  mobile: string | null;
   is_active: boolean;
-  last_login_at: unknown;
+  last_login_at: string | null;
 };

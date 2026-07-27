@@ -184,7 +184,7 @@
     "lint-staged": "^15.2.10",
     "miniprogram-api-typings": "^4.1.0",
     "miniprogram-ci": "^2.1.26",
-    "openapi-ts-request": "^1.10.0",
+    "openapi-ts-request": "1.12.3",
     "picocolors": "^1.1.1",
     "postcss": "^8.4.49",
     "postcss-html": "^1.8.0",
