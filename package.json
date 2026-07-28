@@ -140,7 +140,7 @@
     "pinia": "2.0.36",
     "pinia-plugin-persistedstate": "3.2.1",
     "vue": "^3.4.21",
-    "vue-i18n": "9.1.9",
+    "vue-i18n": "9.14.5",
     "vue-router": "4.5.1",
     "z-paging": "2.8.7"
   },
@@ -186,7 +186,7 @@
     "miniprogram-ci": "^2.1.26",
     "openapi-ts-request": "1.12.3",
     "picocolors": "^1.1.1",
-    "postcss": "^8.4.49",
+    "postcss": "8.5.18",
     "postcss-html": "^1.8.0",
     "postcss-scss": "^4.0.9",
     "rollup-plugin-visualizer": "^6.0.3",
@@ -198,11 +198,12 @@
     "vite": "5.2.8",
     "vite-plugin-restart": "^1.0.0",
     "vite-plugin-vue-devtools": "^8.0.5",
-    "vitest": "3.2.4",
+    "vitest": "3.2.6",
     "vue-tsc": "^3.0.6"
   },
   "pnpm": {
     "overrides": {
+      "@dcloudio/uni-cli-shared>@intlify/core-base": "9.14.5",
       "unconfig": "7.3.2"
     }
   },
