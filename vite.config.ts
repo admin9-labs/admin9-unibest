@@ -55,6 +55,7 @@ export default defineConfig(({ command, mode }) => {
   const envDir = path.resolve(process.cwd(), 'env')
   const env = loadEnv(mode, envDir)
   const localEnv = loadEnv(mode, envDir, '')
+  const devServerHost = process.env.VITE_APP_HOST || localEnv.VITE_APP_HOST || '127.0.0.1'
   const {
     VITE_APP_PORT,
     VITE_SERVER_BASEURL,
@@ -188,7 +189,7 @@ export default defineConfig(({ command, mode }) => {
       },
     },
     server: {
-      host: '0.0.0.0',
+      host: devServerHost,
       hmr: true,
       port: Number.parseInt(VITE_APP_PORT, 10),
       // 仅 H5 端生效，其他端不生效（其他端走build，不走devServer)
