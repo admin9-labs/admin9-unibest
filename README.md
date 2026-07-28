@@ -21,7 +21,7 @@ pnpm dev:h5
 pnpm dev:mp
 ```
 
-H5 默认运行在 [http://localhost:9000/](http://localhost:9000/)。开发模式下 `/api` 默认代理到同级 Laravel 仓库 `composer dev` 启动的 `http://localhost:8000`，因此 clean clone 不依赖 Herd 或 Valet。使用 Herd/Valet 时，在忽略的 `env/.env.development.local` 中设置 `VITE_APP_PROXY_TARGET=http://admin9-api-laravel.test`，或在启动命令前设置同名环境变量。微信开发者工具导入目录为 `dist/dev/mp-weixin`。
+H5 默认仅监听本机并运行在 [http://localhost:9000/](http://localhost:9000/)。开发模式下 `/api` 默认代理到同级 Laravel 仓库 `composer dev` 启动的 `http://localhost:8000`，因此 clean clone 不依赖 Herd 或 Valet。使用 Herd/Valet 时，在忽略的 `env/.env.development.local` 中设置 `VITE_APP_PROXY_TARGET=http://admin9-api-laravel.test`，或在启动命令前设置同名环境变量。跨设备调试必须显式使用 `VITE_APP_HOST=0.0.0.0 pnpm dev:h5`；微信开发者工具导入目录为 `dist/dev/mp-weixin`。
 
 `env/.env` 中的 `https://api.example.com` 是公开仓库的安全占位值，不是可用生产地址。微信开发版、体验版和正式版应分别通过 `VITE_SERVER_BASEURL__WEIXIN_DEVELOP`、`VITE_SERVER_BASEURL__WEIXIN_TRIAL`、`VITE_SERVER_BASEURL__WEIXIN_RELEASE` 配置已备案 HTTPS 请求域名。不要把凭据或秘密放入任何客户端可见的 `VITE_*` 变量。
 
