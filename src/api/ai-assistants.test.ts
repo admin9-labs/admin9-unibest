@@ -60,9 +60,10 @@ describe('public AI assistant API adapter', () => {
     ]
     const reader = {
       read: vi.fn()
-        .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(chunks[0].slice(0, 24)) })
-        .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(chunks[0].slice(24) + chunks[1] + chunks[2]) })
-        .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(chunks[3]) })
+        .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode('event: start\n') })
+        .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(`${chunks[0].slice('event: start\n'.length)}event: delta\n`) })
+        .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(`${chunks[1].slice('event: delta\n'.length)}${chunks[2]}event: complete\n`) })
+        .mockResolvedValueOnce({ done: false, value: new TextEncoder().encode(chunks[3].slice('event: complete\n'.length)) })
         .mockResolvedValueOnce({ done: true, value: undefined }),
     }
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
@@ -77,6 +78,34 @@ describe('public AI assistant API adapter', () => {
       assistant: { code: 'travel' },
     })
     expect(deltas).toEqual(['邛海', '适合游览。'])
+  })
+
+  it('stops before emitting a JSON fallback answer', async () => {
+    const originalFetch = globalThis.fetch
+    vi.stubGlobal('fetch', undefined)
+    const controller = new AbortController()
+    let resolveChat: (value: unknown) => void = () => {}
+    service.chat.mockReturnValue(new Promise((resolve) => {
+      resolveChat = resolve
+    }))
+    const stream = streamAiAssistant('travel', '问题', { signal: controller.signal })
+
+    controller.abort()
+    resolveChat({ data: { chat: { answer: '不应显示' } } })
+
+    await expect(stream).rejects.toThrow()
+    vi.stubGlobal('fetch', originalFetch)
+  })
+
+  it('maps stream read failures to an actionable network message', async () => {
+    const reader = { read: vi.fn().mockRejectedValue(new TypeError('Failed to fetch')) }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'text/event-stream' }),
+      body: { getReader: () => reader },
+    }))
+
+    await expect(streamAiAssistant('travel', '问题')).rejects.toThrow('网络连接已中断，请检查网络后重试')
   })
 
   it('falls back to JSON when the stream endpoint returns JSON', async () => {

@@ -59,7 +59,11 @@ export async function askAiAssistant(code: string, message: string) {
 
 export async function streamAiAssistant(code: string, message: string, options: AiChatStreamOptions = {}): Promise<AiChatAnswer> {
   if (typeof globalThis.fetch !== 'function') {
+    if (options.signal?.aborted)
+      throw options.signal.reason || new DOMException('Aborted', 'AbortError')
     const answer = await askAiAssistant(code, message)
+    if (options.signal?.aborted)
+      throw options.signal.reason || new DOMException('Aborted', 'AbortError')
     options.onDelta?.(answer.answer)
     return answer
   }
@@ -92,6 +96,8 @@ export async function streamAiAssistant(code: string, message: string, options: 
     const answer = envelope.data?.chat || envelope.chat
     if (!answer)
       throw new Error(envelope.message || 'AI 助手返回了无效结果')
+    if (options.signal?.aborted)
+      throw options.signal.reason || new DOMException('Aborted', 'AbortError')
     options.onDelta?.(answer.answer)
     return answer
   }
@@ -102,6 +108,8 @@ export async function streamAiAssistant(code: string, message: string, options: 
   const decoder = new TextDecoder()
   const reader = response.body.getReader()
   let buffer = ''
+  let currentEvent = ''
+  let currentData: string[] = []
   let assistant: AiChatAnswer['assistant'] | undefined
   let complete: Omit<AiChatAnswer, 'assistant'> | undefined
 
@@ -145,32 +153,39 @@ export async function streamAiAssistant(code: string, message: string, options: 
     buffer += chunk
     const lines = buffer.split(/\r\n|\n|\r/)
     buffer = final ? '' : (lines.pop() || '')
-    let event = ''
-    let data: string[] = []
     for (const line of lines) {
       if (!line) {
-        dispatch(event, data.join('\n'))
-        event = ''
-        data = []
+        dispatch(currentEvent, currentData.join('\n'))
+        currentEvent = ''
+        currentData = []
       }
       else if (line.startsWith('event:')) {
-        event = line.slice(6).trim()
+        currentEvent = line.slice(6).trim()
       }
       else if (line.startsWith('data:')) {
-        data.push(line.slice(5).trimStart())
+        currentData.push(line.slice(5).trimStart())
       }
     }
     if (final)
-      dispatch(event, data.join('\n'))
+      dispatch(currentEvent, currentData.join('\n'))
   }
 
-  while (true) {
-    const result = await reader.read()
-    if (result.done)
-      break
-    consume(decoder.decode(result.value, { stream: true }))
+  try {
+    while (true) {
+      const result = await reader.read()
+      if (result.done)
+        break
+      consume(decoder.decode(result.value, { stream: true }))
+    }
+    consume(decoder.decode(), true)
   }
-  consume(decoder.decode(), true)
+  catch (error) {
+    if (options.signal?.aborted)
+      throw error
+    if (error instanceof Error && error.message.startsWith('AI 助手'))
+      throw error
+    throw new Error('网络连接已中断，请检查网络后重试')
+  }
 
   if (!complete)
     throw new Error('AI 助手未完成本次回答')
