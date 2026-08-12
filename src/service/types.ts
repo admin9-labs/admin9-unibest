@@ -225,6 +225,42 @@ export type ChangePasswordRequest = {
   password_confirmation: string;
 };
 
+export type DiningPlaceResource = {
+  code: string;
+  name: string;
+  summary: string | null;
+  description: string | null;
+  category: {
+    code: string;
+    name: string;
+  } | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  cover: {
+    url: string;
+    width: number | null;
+    height: number | null;
+  } | null;
+  gallery?: {
+    url: string;
+    width: number | null;
+    height: number | null;
+  }[];
+  phone: string | null;
+  opening_hours: string | null;
+  average_price: number | null;
+  signature_dishes: string[] | null;
+  attraction?: {
+    code: string;
+    name: string;
+  } | null;
+  scenic_spot?: {
+    code: string;
+    name: string;
+  } | null;
+};
+
 export type LoginRequest = {
   account: string;
   password: string;
@@ -492,6 +528,88 @@ export type PublicAudioGuidesUsingGetResponses = {
    * Internal Server Error
    */
   500: PublicAudioGuidesUsingGetResponse;
+};
+
+export type PublicRestaurantsRestaurantUsingGetParams = {
+  restaurant: string;
+};
+
+export type PublicRestaurantsRestaurantUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    restaurant: DiningPlaceResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicRestaurantsRestaurantUsingGetResponses = {
+  200: PublicRestaurantsRestaurantUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: PublicRestaurantsRestaurantUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicRestaurantsRestaurantUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicRestaurantsRestaurantUsingGetResponse;
+};
+
+export type PublicRestaurantsUsingGetParams = {
+  page?: number;
+  page_size?: number;
+  keyword?: string | null;
+  category_code?: string | null;
+};
+
+export type PublicRestaurantsUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: DiningPlaceResource[];
+  meta: {
+    /** Pagination strategy */
+    pagination: string;
+    /** Current page number */
+    page: number;
+    /** Items per page */
+    page_size: number;
+    /** Whether more pages exist */
+    has_more: boolean;
+    /** Total number of items */
+    total: number;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicRestaurantsUsingGetResponses = {
+  /**
+   * Paginated list
+   */
+  200: PublicRestaurantsUsingGetResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicRestaurantsUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicRestaurantsUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicRestaurantsUsingGetResponse;
 };
 
 export type PublicScenicSpotsScenicSpotUsingGetParams = {

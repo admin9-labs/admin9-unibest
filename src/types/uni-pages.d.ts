@@ -13,6 +13,8 @@ type _LocationUrl =
   "/pages/audio-guides/index" |
   "/pages/auth/login" |
   "/pages/me/me" |
+  "/pages/restaurants/detail" |
+  "/pages/restaurants/index" |
   "/pages/scenic-spots/detail" |
   "/pages/scenic-spots/index" |
   "/pages/travel-routes/detail" |

@@ -19,6 +19,9 @@ function openArticles() {
 function openAudioGuides() {
   uni.navigateTo({ url: '/pages/audio-guides/index' })
 }
+function openRestaurants() {
+  uni.navigateTo({ url: '/pages/restaurants/index' })
+}
 </script>
 
 <template>
@@ -95,6 +98,17 @@ function openAudioGuides() {
           语音导览
         </view><view class="feature-description">
           播放已发布的景区景点讲解
+        </view>
+      </view><wd-icon name="arrow-right" size="20" color="#69716c" />
+    </view>
+    <view class="feature-row" role="button" @click="openRestaurants">
+      <view class="feature-icon restaurant-icon">
+        <wd-icon name="food" size="24" />
+      </view><view class="feature-copy">
+        <view class="feature-title">
+          餐饮
+        </view><view class="feature-description">
+          发现已发布餐厅、招牌菜与位置
         </view>
       </view><wd-icon name="arrow-right" size="20" color="#69716c" />
     </view>
@@ -176,6 +190,9 @@ function openAudioGuides() {
 }
 .feature-icon.audio-icon {
   background: #5d4d78;
+}
+.feature-icon.restaurant-icon {
+  background: #a64532;
 }
 
 .feature-copy {
