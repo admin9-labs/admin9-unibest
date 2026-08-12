@@ -14,6 +14,7 @@ type _LocationUrl =
   "/pages/audio-guides/detail" |
   "/pages/audio-guides/index" |
   "/pages/auth/login" |
+  "/pages/map/index" |
   "/pages/me/me" |
   "/pages/restaurants/detail" |
   "/pages/restaurants/index" |
@@ -28,6 +29,7 @@ interface NavigateToOptions {
 interface RedirectToOptions extends NavigateToOptions {}
 
 interface SwitchTabOptions {
+
 }
 
 type ReLaunchOptions = NavigateToOptions | SwitchTabOptions;

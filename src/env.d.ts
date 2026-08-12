@@ -29,6 +29,8 @@ interface ImportMetaEnv {
   readonly VITE_SERVER_HAS_API_PREFIX: 'true' | 'false'
   /** 是否清除console */
   readonly VITE_DELETE_CONSOLE: string
+  /** 腾讯地图浏览器端 JS SDK key */
+  readonly VITE_QQ_MAP_KEY?: string
   // 更多环境变量...
 }
 

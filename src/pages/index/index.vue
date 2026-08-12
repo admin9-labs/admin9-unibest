@@ -25,6 +25,9 @@ function openRestaurants() {
 function openAccommodations() {
   uni.navigateTo({ url: '/pages/accommodations/index' })
 }
+function openMap() {
+  uni.navigateTo({ url: '/pages/map/index' })
+}
 </script>
 
 <template>
@@ -126,6 +129,17 @@ function openAccommodations() {
         </view>
       </view><wd-icon name="arrow-right" size="20" color="#69716c" />
     </view>
+    <view class="feature-row" role="button" @click="openMap">
+      <view class="feature-icon map-icon">
+        <wd-icon name="map" size="24" />
+      </view><view class="feature-copy">
+        <view class="feature-title">
+          地图导览
+        </view><view class="feature-description">
+          查看真实内容点位并发起腾讯地图导航
+        </view>
+      </view><wd-icon name="arrow-right" size="20" color="#69716c" />
+    </view>
   </view>
 </template>
 
@@ -210,6 +224,9 @@ function openAccommodations() {
 }
 .feature-icon.accommodation-icon {
   background: #2f6571;
+}
+.feature-icon.map-icon {
+  background: #34765b;
 }
 
 .feature-copy {
