@@ -28,6 +28,9 @@ function openAccommodations() {
 function openMap() {
   uni.navigateTo({ url: '/pages/map/index' })
 }
+function openServices() {
+  uni.navigateTo({ url: '/pages/services/index' })
+}
 </script>
 
 <template>
@@ -140,6 +143,17 @@ function openMap() {
         </view>
       </view><wd-icon name="arrow-right" size="20" color="#69716c" />
     </view>
+    <view class="feature-row" role="button" @click="openServices">
+      <view class="feature-icon service-icon">
+        <wd-icon name="service" size="24" />
+      </view><view class="feature-copy">
+        <view class="feature-title">
+          旅游服务
+        </view><view class="feature-description">
+          查看游客中心、交通与便民服务信息
+        </view>
+      </view><wd-icon name="arrow-right" size="20" color="#69716c" />
+    </view>
   </view>
 </template>
 
@@ -227,6 +241,9 @@ function openMap() {
 }
 .feature-icon.map-icon {
   background: #34765b;
+}
+.feature-icon.service-icon {
+  background: #246b61;
 }
 
 .feature-copy {

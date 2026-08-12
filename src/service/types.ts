@@ -813,6 +813,88 @@ export type PublicScenicSpotsUsingGetResponses = {
   500: PublicScenicSpotsUsingGetResponse;
 };
 
+export type PublicServiceInformationServiceInformationUsingGetParams = {
+  serviceInformation: string;
+};
+
+export type PublicServiceInformationServiceInformationUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    service_information: VisitorServiceResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicServiceInformationServiceInformationUsingGetResponses = {
+  200: PublicServiceInformationServiceInformationUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: PublicServiceInformationServiceInformationUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicServiceInformationServiceInformationUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicServiceInformationServiceInformationUsingGetResponse;
+};
+
+export type PublicServiceInformationUsingGetParams = {
+  page?: number;
+  page_size?: number;
+  keyword?: string | null;
+  type_code?: string | null;
+};
+
+export type PublicServiceInformationUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: VisitorServiceResource[];
+  meta: {
+    /** Pagination strategy */
+    pagination: string;
+    /** Current page number */
+    page: number;
+    /** Items per page */
+    page_size: number;
+    /** Whether more pages exist */
+    has_more: boolean;
+    /** Total number of items */
+    total: number;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicServiceInformationUsingGetResponses = {
+  /**
+   * Paginated list
+   */
+  200: PublicServiceInformationUsingGetResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicServiceInformationUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicServiceInformationUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicServiceInformationUsingGetResponse;
+};
+
 export type PublicTravelRoutesTravelRouteUsingGetParams = {
   travelRoute: string;
 };
@@ -990,4 +1072,31 @@ export type TourismRouteResource = {
   } | null;
   duration_minutes: number | null;
   nodes?: TourismRouteNodeResource[];
+};
+
+export type VisitorServiceResource = {
+  code: string;
+  title: string;
+  type: {
+    code: string;
+    name: string;
+  } | null;
+  provider: string | null;
+  service_area: string | null;
+  summary: string | null;
+  content: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  phone: string | null;
+  service_hours: string | null;
+  cover: {
+    url: string;
+    width: number | null;
+    height: number | null;
+  } | null;
+  attachments: {
+    name: string;
+    url: string;
+  }[];
 };

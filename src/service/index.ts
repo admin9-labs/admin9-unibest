@@ -10,4 +10,5 @@ export * from './audioGuide';
 export * from './auth';
 export * from './restaurant';
 export * from './scenicSpot';
+export * from './serviceInformation';
 export * from './travelRoute';

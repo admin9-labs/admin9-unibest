@@ -20,6 +20,8 @@ type _LocationUrl =
   "/pages/restaurants/index" |
   "/pages/scenic-spots/detail" |
   "/pages/scenic-spots/index" |
+  "/pages/services/detail" |
+  "/pages/services/index" |
   "/pages/travel-routes/detail" |
   "/pages/travel-routes/index";
 
