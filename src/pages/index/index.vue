@@ -16,6 +16,9 @@ function openTravelRoutes() {
 function openArticles() {
   uni.navigateTo({ url: '/pages/articles/index' })
 }
+function openAudioGuides() {
+  uni.navigateTo({ url: '/pages/audio-guides/index' })
+}
 </script>
 
 <template>
@@ -81,6 +84,17 @@ function openArticles() {
           攻略资讯
         </view><view class="feature-description">
           阅读已发布攻略、资讯与通知
+        </view>
+      </view><wd-icon name="arrow-right" size="20" color="#69716c" />
+    </view>
+    <view class="feature-row" role="button" @click="openAudioGuides">
+      <view class="feature-icon audio-icon">
+        <wd-icon name="headphones" size="24" />
+      </view><view class="feature-copy">
+        <view class="feature-title">
+          语音导览
+        </view><view class="feature-description">
+          播放已发布的景区景点讲解
         </view>
       </view><wd-icon name="arrow-right" size="20" color="#69716c" />
     </view>
@@ -159,6 +173,9 @@ function openArticles() {
 }
 .feature-icon.article-icon {
   background: #8a4f4a;
+}
+.feature-icon.audio-icon {
+  background: #5d4d78;
 }
 
 .feature-copy {

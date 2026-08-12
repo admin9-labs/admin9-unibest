@@ -15,6 +15,23 @@ export type ArticleRelationLinkResource = {
   };
 };
 
+export type AudioGuidePlaybackResource = {
+  code: string;
+  title: string;
+  summary: string | null;
+  script: string | null;
+  audio: {
+    url: string;
+    mime_type: string;
+    size: number;
+  };
+  target_type: 'attraction' | 'scenic_spot' | 'travel_route';
+  target: {
+    code: string;
+    name: string;
+  };
+};
+
 export type AuthLoginUsingPostResponse = {
   /** Whether the request was successful */
   success: boolean;
@@ -394,6 +411,89 @@ export type PublicAttractionsUsingGetResponses = {
   500: PublicAttractionsUsingGetResponse;
 };
 
+export type PublicAudioGuidesAudioGuideUsingGetParams = {
+  audioGuide: string;
+};
+
+export type PublicAudioGuidesAudioGuideUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    audio_guide: AudioGuidePlaybackResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicAudioGuidesAudioGuideUsingGetResponses = {
+  200: PublicAudioGuidesAudioGuideUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: PublicAudioGuidesAudioGuideUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicAudioGuidesAudioGuideUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicAudioGuidesAudioGuideUsingGetResponse;
+};
+
+export type PublicAudioGuidesUsingGetParams = {
+  page?: number;
+  page_size?: number;
+  keyword?: string | null;
+  target_type?: 'attraction' | 'scenic_spot' | 'travel_route' | null;
+  target_code?: string | null;
+};
+
+export type PublicAudioGuidesUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: AudioGuidePlaybackResource[];
+  meta: {
+    /** Pagination strategy */
+    pagination: string;
+    /** Current page number */
+    page: number;
+    /** Items per page */
+    page_size: number;
+    /** Whether more pages exist */
+    has_more: boolean;
+    /** Total number of items */
+    total: number;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicAudioGuidesUsingGetResponses = {
+  /**
+   * Paginated list
+   */
+  200: PublicAudioGuidesUsingGetResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicAudioGuidesUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicAudioGuidesUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicAudioGuidesUsingGetResponse;
+};
+
 export type PublicScenicSpotsScenicSpotUsingGetParams = {
   scenicSpot: string;
 };
@@ -588,6 +688,14 @@ export enum Relation_typeEnum {
 }
 
 export type IRelation_typeEnum = keyof typeof Relation_typeEnum;
+
+export enum Target_typeEnum {
+  'attraction' = 'attraction',
+  'scenic_spot' = 'scenic_spot',
+  'travel_route' = 'travel_route',
+}
+
+export type ITarget_typeEnum = keyof typeof Target_typeEnum;
 
 export type TourismAreaResource = {
   code: string;

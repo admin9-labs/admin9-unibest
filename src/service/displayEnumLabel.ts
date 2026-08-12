@@ -15,3 +15,11 @@ export function displayRelationTypeEnum(field: API.Relation_typeEnum) {
     accommodation: 'accommodation',
   }[field];
 }
+
+export function displayTargetTypeEnum(field: API.Target_typeEnum) {
+  return {
+    attraction: 'attraction',
+    scenic_spot: 'scenic_spot',
+    travel_route: 'travel_route',
+  }[field];
+}

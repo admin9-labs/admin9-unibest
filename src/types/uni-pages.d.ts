@@ -9,6 +9,8 @@ type _LocationUrl =
   "/pages/articles/index" |
   "/pages/attractions/detail" |
   "/pages/attractions/index" |
+  "/pages/audio-guides/detail" |
+  "/pages/audio-guides/index" |
   "/pages/auth/login" |
   "/pages/me/me" |
   "/pages/scenic-spots/detail" |
