@@ -7,6 +7,8 @@ type _LocationUrl =
   "/pages/index/index" |
   "/pages/accommodations/detail" |
   "/pages/accommodations/index" |
+  "/pages/ai-assistants/chat" |
+  "/pages/ai-assistants/index" |
   "/pages/articles/detail" |
   "/pages/articles/index" |
   "/pages/attractions/detail" |

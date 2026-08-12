@@ -1,6 +1,28 @@
 /* eslint-disable */
 // @ts-ignore
 
+export type AiChatResource = {
+  assistant: {
+    code: string;
+    name: string;
+  };
+  answer: string;
+  message_reference: string;
+  message_reference_expires_at: string;
+  knowledge_used_count: number;
+};
+
+export type AiFeedbackCategoryResource = {
+  code: string;
+  name: string;
+};
+
+export type AiFeedbackReceiptResource = {
+  accepted: boolean;
+  rating: 'helpful' | 'unhelpful';
+  category_code: string;
+};
+
 export type ArticleRelationLinkResource = {
   relation_type:
     | 'attraction'
@@ -719,6 +741,192 @@ export type PublicAccommodationsUsingGetResponses = {
    * Internal Server Error
    */
   500: PublicAccommodationsUsingGetResponse;
+};
+
+export type PublicAiAssistantResource = {
+  code: string;
+  name: string;
+  description: string | null;
+  welcome_message: string;
+};
+
+export type PublicAiAssistantsAiAssistantChatUsingPostParams = {
+  aiAssistant: string;
+};
+
+export type PublicAiAssistantsAiAssistantChatUsingPostResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    chat: AiChatResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicAiAssistantsAiAssistantChatUsingPostResponses = {
+  200: PublicAiAssistantsAiAssistantChatUsingPostResponse;
+  /**
+   * Not Found
+   */
+  404: PublicAiAssistantsAiAssistantChatUsingPostResponse;
+  /**
+   * Content Too Large
+   */
+  413: PublicAiAssistantsAiAssistantChatUsingPostResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicAiAssistantsAiAssistantChatUsingPostResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicAiAssistantsAiAssistantChatUsingPostResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicAiAssistantsAiAssistantChatUsingPostResponse;
+  /**
+   * Bad Gateway
+   */
+  502: PublicAiAssistantsAiAssistantChatUsingPostResponse;
+  /**
+   * Service Unavailable
+   */
+  503: PublicAiAssistantsAiAssistantChatUsingPostResponse;
+  /**
+   * Gateway Timeout
+   */
+  504: PublicAiAssistantsAiAssistantChatUsingPostResponse;
+};
+
+export type PublicAiAssistantsAiAssistantUsingGetParams = {
+  aiAssistant: string;
+};
+
+export type PublicAiAssistantsAiAssistantUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    ai_assistant: PublicAiAssistantResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicAiAssistantsAiAssistantUsingGetResponses = {
+  200: PublicAiAssistantsAiAssistantUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: PublicAiAssistantsAiAssistantUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicAiAssistantsAiAssistantUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicAiAssistantsAiAssistantUsingGetResponse;
+};
+
+export type PublicAiAssistantsUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: PublicAiAssistantResource[];
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicAiAssistantsUsingGetResponses = {
+  /**
+   * Array of `PublicAiAssistantResource`
+   */
+  200: PublicAiAssistantsUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicAiAssistantsUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicAiAssistantsUsingGetResponse;
+};
+
+export type PublicAiChatRequest = {
+  message: string;
+};
+
+export type PublicAiFeedbackCategoriesUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: AiFeedbackCategoryResource[];
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicAiFeedbackCategoriesUsingGetResponses = {
+  /**
+   * Array of `AiFeedbackCategoryResource`
+   */
+  200: PublicAiFeedbackCategoriesUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicAiFeedbackCategoriesUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicAiFeedbackCategoriesUsingGetResponse;
+};
+
+export type PublicAiFeedbackUsingPostResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    feedback: AiFeedbackReceiptResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicAiFeedbackUsingPostResponses = {
+  200: PublicAiFeedbackUsingPostResponse;
+  /**
+   * Not Found
+   */
+  404: PublicAiFeedbackUsingPostResponse;
+  /**
+   * Content Too Large
+   */
+  413: PublicAiFeedbackUsingPostResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicAiFeedbackUsingPostResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicAiFeedbackUsingPostResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicAiFeedbackUsingPostResponse;
 };
 
 export type PublicArticlesArticleUsingGetParams = {
@@ -1565,6 +1773,20 @@ export type QueryConsultationRequest = {
   query_credential: string;
 };
 
+export enum RatingEnum {
+  'helpful' = 'helpful',
+  'unhelpful' = 'unhelpful',
+}
+
+export type IRatingEnum = keyof typeof RatingEnum;
+
+export enum RatingEnum2 {
+  'helpful' = 'helpful',
+  'unhelpful' = 'unhelpful',
+}
+
+export type IRatingEnum2 = keyof typeof RatingEnum2;
+
 export enum Relation_typeEnum {
   'attraction' = 'attraction',
   'scenic_spot' = 'scenic_spot',
@@ -1619,6 +1841,12 @@ export type StoreConsultationRequest = {
   contact_email?: string | null;
   subject: string;
   content: string;
+};
+
+export type SubmitPublicAiFeedbackRequest = {
+  message_reference: string;
+  rating: 'helpful' | 'unhelpful';
+  category_code: string;
 };
 
 export enum Target_typeEnum {

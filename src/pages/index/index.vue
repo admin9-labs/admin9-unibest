@@ -31,6 +31,9 @@ function openMap() {
 function openServices() {
   uni.navigateTo({ url: '/pages/public-services/index' })
 }
+function openAiAssistants() {
+  uni.navigateTo({ url: '/pages/ai-assistants/index' })
+}
 </script>
 
 <template>
@@ -154,6 +157,17 @@ function openServices() {
         </view>
       </view><wd-icon name="arrow-right" size="20" color="#69716c" />
     </view>
+    <view class="feature-row" role="button" @click="openAiAssistants">
+      <view class="feature-icon ai-icon">
+        <wd-icon name="chat" size="24" />
+      </view><view class="feature-copy">
+        <view class="feature-title">
+          AI 文旅助手
+        </view><view class="feature-description">
+          游客可直接提问，回答仅作游览参考
+        </view>
+      </view><wd-icon name="arrow-right" size="20" color="#69716c" />
+    </view>
   </view>
 </template>
 
@@ -244,6 +258,9 @@ function openServices() {
 }
 .feature-icon.service-icon {
   background: #246b61;
+}
+.feature-icon.ai-icon {
+  background: #5d4d78;
 }
 
 .feature-copy {

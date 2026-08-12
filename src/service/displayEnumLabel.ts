@@ -6,6 +6,14 @@ export function displayNodeTypeEnum(field: API.Node_typeEnum) {
   return { attraction: 'attraction', scenic_spot: 'scenic_spot' }[field];
 }
 
+export function displayRatingEnum(field: API.RatingEnum) {
+  return { helpful: 'helpful', unhelpful: 'unhelpful' }[field];
+}
+
+export function displayRatingEnum2(field: API.RatingEnum2) {
+  return { helpful: 'helpful', unhelpful: 'unhelpful' }[field];
+}
+
 export function displayRelationTypeEnum(field: API.Relation_typeEnum) {
   return {
     attraction: 'attraction',

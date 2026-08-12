@@ -4,6 +4,7 @@ export * from './types';
 export * from './displayEnumLabel';
 
 export * from './accommodation';
+export * from './aiAssistant';
 export * from './article';
 export * from './attraction';
 export * from './audioGuide';
