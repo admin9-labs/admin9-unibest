@@ -207,3 +207,102 @@ export type MemberResource = {
   is_active: boolean;
   last_login_at: string | null;
 };
+
+export type PublicScenicSpotsScenicSpotUsingGetParams = {
+  scenicSpot: string;
+};
+
+export type PublicScenicSpotsScenicSpotUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    scenic_spot: TourismDestinationResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicScenicSpotsScenicSpotUsingGetResponses = {
+  200: PublicScenicSpotsScenicSpotUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: PublicScenicSpotsScenicSpotUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicScenicSpotsScenicSpotUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicScenicSpotsScenicSpotUsingGetResponse;
+};
+
+export type PublicScenicSpotsUsingGetParams = {
+  page?: number;
+  page_size?: number;
+  keyword?: string | null;
+  is_recommended?: boolean;
+};
+
+export type PublicScenicSpotsUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: TourismDestinationResource[];
+  meta: {
+    /** Pagination strategy */
+    pagination: string;
+    /** Current page number */
+    page: number;
+    /** Items per page */
+    page_size: number;
+    /** Whether more pages exist */
+    has_more: boolean;
+    /** Total number of items */
+    total: number;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicScenicSpotsUsingGetResponses = {
+  /**
+   * Paginated list
+   */
+  200: PublicScenicSpotsUsingGetResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicScenicSpotsUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicScenicSpotsUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicScenicSpotsUsingGetResponse;
+};
+
+export type TourismDestinationResource = {
+  code: string;
+  name: string;
+  summary: string | null;
+  description: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  cover: {
+    url: string | null;
+    width: number | null;
+    height: number | null;
+  } | null;
+  phone: string | null;
+  opening_hours: string | null;
+};

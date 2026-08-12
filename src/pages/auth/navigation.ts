@@ -65,5 +65,5 @@ export function navigateAfterLogin(redirect?: string) {
   if (pages.length > 1)
     uni.navigateBack()
   else
-    uni.switchTab({ url: '/pages/me/me' })
+    uni.reLaunch({ url: '/pages/me/me' })
 }

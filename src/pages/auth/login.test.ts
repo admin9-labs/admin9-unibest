@@ -42,8 +42,8 @@ describe('login page', () => {
     await flushPromises()
 
     expect(login).toHaveBeenCalledWith({ account: 'member@example.test', password: 'password123' })
-    expect(uni.switchTab).toHaveBeenCalledWith({ url: '/pages/me/me' })
-    expect(uni.reLaunch).not.toHaveBeenCalled()
+    expect(uni.reLaunch).toHaveBeenCalledWith({ url: '/pages/me/me' })
+    expect(uni.switchTab).not.toHaveBeenCalled()
   })
 
   it('catches a rejected login and restores the loading state', async () => {

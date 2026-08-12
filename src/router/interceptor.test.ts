@@ -34,7 +34,7 @@ describe('authentication route interceptor', () => {
     expect(navigateToInterceptor.invoke({
       url: '/pages/auth/login?redirect=%E0%A4%A',
     })).toBe(false)
-    expect(uni.switchTab).toHaveBeenCalledWith({ url: '/pages/me/me' })
-    expect(uni.reLaunch).not.toHaveBeenCalled()
+    expect(uni.reLaunch).toHaveBeenCalledWith({ url: '/pages/me/me' })
+    expect(uni.switchTab).not.toHaveBeenCalled()
   })
 })

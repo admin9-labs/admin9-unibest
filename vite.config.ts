@@ -68,7 +68,7 @@ export default defineConfig(({ command, mode }) => {
     VITE_COPY_NATIVE_RES_ENABLE,
   } = env
   const { WECHAT_DEVTOOLS_CLI_PATH } = localEnv
-  console.log('环境变量 env -> ', env)
+  console.log('环境变量已加载 -> ', Object.keys(env).sort())
 
   return defineConfig({
     envDir: './env', // 自定义env目录

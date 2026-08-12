@@ -10,10 +10,10 @@ describe('navigateAfterLogin', () => {
     '/pages/me/me',
     '%2Fpages%2Fme%2Fme',
     '%252Fpages%252Fme%252Fme',
-  ])('normalizes a protected Me tab redirect with switchTab: %s', (redirect) => {
+  ])('normalizes a protected Me redirect without requiring a tab bar: %s', (redirect) => {
     navigateAfterLogin(redirect)
-    expect(uni.switchTab).toHaveBeenCalledWith({ url: '/pages/me/me' })
-    expect(uni.reLaunch).not.toHaveBeenCalled()
+    expect(uni.reLaunch).toHaveBeenCalledWith({ url: '/pages/me/me' })
+    expect(uni.switchTab).not.toHaveBeenCalled()
   })
 
   it('preserves the query when relaunching an encoded non-tab redirect', () => {
@@ -22,10 +22,10 @@ describe('navigateAfterLogin', () => {
     expect(uni.switchTab).not.toHaveBeenCalled()
   })
 
-  it('strips query parameters before switching to a Tab page', () => {
+  it('preserves query parameters when opening Me as a normal page', () => {
     navigateAfterLogin('%2Fpages%2Fme%2Fme%3Fsource%3Dlogin')
-    expect(uni.switchTab).toHaveBeenCalledWith({ url: '/pages/me/me' })
-    expect(uni.reLaunch).not.toHaveBeenCalled()
+    expect(uni.reLaunch).toHaveBeenCalledWith({ url: '/pages/me/me?source=login' })
+    expect(uni.switchTab).not.toHaveBeenCalled()
   })
 
   it.each([
@@ -41,8 +41,8 @@ describe('navigateAfterLogin', () => {
     '%2Fpages%2Fme%2Fme%23fragment',
   ])('defaults to Me for an absent or unsafe redirect: %s', (redirect) => {
     navigateAfterLogin(redirect)
-    expect(uni.switchTab).toHaveBeenCalledWith({ url: '/pages/me/me' })
-    expect(uni.reLaunch).not.toHaveBeenCalled()
+    expect(uni.reLaunch).toHaveBeenCalledWith({ url: '/pages/me/me' })
+    expect(uni.switchTab).not.toHaveBeenCalled()
   })
 
   it('keeps the existing direct-login navigateBack behavior', () => {

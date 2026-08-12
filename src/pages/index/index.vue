@@ -1,61 +1,118 @@
 <script lang="ts" setup>
-import { storeToRefs } from 'pinia'
-import { useTokenStore } from '@/store/token'
-import { useUserStore } from '@/store/user'
-
 defineOptions({ name: 'Home' })
-definePage({ type: 'home', style: { navigationBarTitleText: '首页' } })
+definePage({ type: 'home', style: { navigationBarTitleText: '旅享西昌' } })
 
-const tokenStore = useTokenStore()
-const userStore = useUserStore()
-const { member } = storeToRefs(userStore)
-
-function openMemberCenter() {
-  uni.switchTab({ url: '/pages/me/me' })
+function openScenicSpots() {
+  uni.navigateTo({ url: '/pages/scenic-spots/index' })
 }
 </script>
 
 <template>
   <view class="home-page">
     <view class="home-header">
+      <text class="home-kicker">TRAVEL XICHANG</text>
       <view class="home-title">
-        会员服务
+        旅享西昌
       </view>
-      <view class="home-status">
-        {{ tokenStore.hasLogin ? (member?.name || member?.email || member?.mobile || '已登录') : '未登录' }}
+      <view class="home-subtitle">
+        从山水人文出发，发现此刻值得抵达的西昌。
       </view>
     </view>
-    <wd-cell-group border>
-      <wd-cell title="账号中心" label="查看会员资料与账号安全" is-link @click="openMemberCenter" />
-    </wd-cell-group>
+    <view class="section-title">
+      探索目的地
+    </view>
+    <view class="feature-row" role="button" @click="openScenicSpots">
+      <view class="feature-icon">
+        <wd-icon name="location" size="24" />
+      </view>
+      <view class="feature-copy">
+        <view class="feature-title">
+          景区
+        </view>
+        <view class="feature-description">
+          查看已发布景区、开放时间与位置
+        </view>
+      </view>
+      <wd-icon name="arrow-right" size="20" color="#69716c" />
+    </view>
   </view>
 </template>
 
 <style lang="scss" scoped>
 .home-page {
   min-height: 100vh;
-  padding: 32rpx 24rpx;
-  background: #f5f7fa;
+  padding: 48rpx 28rpx;
+  background: #f4f6f3;
   box-sizing: border-box;
 }
 
 .home-header {
-  padding: 48rpx 32rpx;
-  background: #fff;
-  border-bottom: 1px solid #e5e6eb;
-  border-radius: 8px 8px 0 0;
+  padding: 36rpx 4rpx 56rpx;
 }
 
 .home-title {
-  color: #1f2329;
-  font-size: 44rpx;
+  margin-top: 12rpx;
+  color: #17211c;
+  font-size: 58rpx;
+  font-weight: 700;
+}
+
+.home-kicker {
+  color: #34765b;
+  font-size: 22rpx;
   font-weight: 600;
 }
 
-.home-status {
-  margin-top: 12rpx;
-  color: #646a73;
+.home-subtitle {
+  max-width: 600rpx;
+  margin-top: 20rpx;
+  color: #59635e;
   font-size: 28rpx;
-  overflow-wrap: anywhere;
+  line-height: 1.65;
+}
+
+.section-title {
+  margin-bottom: 20rpx;
+  color: #27312c;
+  font-size: 30rpx;
+  font-weight: 600;
+}
+
+.feature-row {
+  display: flex;
+  align-items: center;
+  min-height: 132rpx;
+  padding: 24rpx;
+  background: #fff;
+  border: 1px solid #e1e6e2;
+  border-radius: 8px;
+  box-sizing: border-box;
+}
+
+.feature-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 76rpx;
+  height: 76rpx;
+  color: #fff;
+  background: #23744f;
+  border-radius: 8px;
+}
+
+.feature-copy {
+  flex: 1;
+  min-width: 0;
+  margin: 0 24rpx;
+}
+.feature-title {
+  color: #17211c;
+  font-size: 32rpx;
+  font-weight: 600;
+}
+.feature-description {
+  margin-top: 8rpx;
+  color: #69716c;
+  font-size: 24rpx;
 }
 </style>

@@ -21,6 +21,7 @@ const uniMock = {
   navigateBack: vi.fn(),
   switchTab: vi.fn(),
   reLaunch: vi.fn(),
+  makePhoneCall: vi.fn(),
   // tabbar/store.ts 在模块初始化时调用 getStorageSync，返回 null 确保不影响初始状态
   getStorageSync: vi.fn().mockReturnValue(null),
   setStorageSync: vi.fn(),
