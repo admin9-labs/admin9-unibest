@@ -13,6 +13,9 @@ function openScenicSpots() {
 function openTravelRoutes() {
   uni.navigateTo({ url: '/pages/travel-routes/index' })
 }
+function openArticles() {
+  uni.navigateTo({ url: '/pages/articles/index' })
+}
 </script>
 
 <template>
@@ -69,6 +72,17 @@ function openTravelRoutes() {
         </view>
       </view>
       <wd-icon name="arrow-right" size="20" color="#69716c" />
+    </view>
+    <view class="feature-row" role="button" @click="openArticles">
+      <view class="feature-icon article-icon">
+        <wd-icon name="books" size="24" />
+      </view><view class="feature-copy">
+        <view class="feature-title">
+          攻略资讯
+        </view><view class="feature-description">
+          阅读已发布攻略、资讯与通知
+        </view>
+      </view><wd-icon name="arrow-right" size="20" color="#69716c" />
     </view>
   </view>
 </template>
@@ -142,6 +156,9 @@ function openTravelRoutes() {
 }
 .feature-icon.route-icon {
   background: #7b5934;
+}
+.feature-icon.article-icon {
+  background: #8a4f4a;
 }
 
 .feature-copy {

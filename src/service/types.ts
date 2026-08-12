@@ -1,6 +1,20 @@
 /* eslint-disable */
 // @ts-ignore
 
+export type ArticleRelationLinkResource = {
+  relation_type:
+    | 'attraction'
+    | 'scenic_spot'
+    | 'travel_route'
+    | 'restaurant'
+    | 'accommodation';
+  position: number;
+  target: {
+    code: string;
+    name: string;
+  };
+};
+
 export type AuthLoginUsingPostResponse = {
   /** Whether the request was successful */
   success: boolean;
@@ -214,6 +228,89 @@ export enum Node_typeEnum {
 }
 
 export type INode_typeEnum = keyof typeof Node_typeEnum;
+
+export type PublicArticlesArticleUsingGetParams = {
+  article: string;
+};
+
+export type PublicArticlesArticleUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    article: PublishedContentResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicArticlesArticleUsingGetResponses = {
+  200: PublicArticlesArticleUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: PublicArticlesArticleUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicArticlesArticleUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicArticlesArticleUsingGetResponse;
+};
+
+export type PublicArticlesUsingGetParams = {
+  page?: number;
+  page_size?: number;
+  keyword?: string | null;
+  category_code?: string | null;
+  is_recommended?: boolean;
+};
+
+export type PublicArticlesUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: PublishedContentResource[];
+  meta: {
+    /** Pagination strategy */
+    pagination: string;
+    /** Current page number */
+    page: number;
+    /** Items per page */
+    page_size: number;
+    /** Whether more pages exist */
+    has_more: boolean;
+    /** Total number of items */
+    total: number;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicArticlesUsingGetResponses = {
+  /**
+   * Paginated list
+   */
+  200: PublicArticlesUsingGetResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicArticlesUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicArticlesUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicArticlesUsingGetResponse;
+};
 
 export type PublicAttractionsAttractionUsingGetParams = {
   attraction: string;
@@ -460,6 +557,37 @@ export type PublicTravelRoutesUsingGetResponses = {
    */
   500: PublicTravelRoutesUsingGetResponse;
 };
+
+export type PublishedContentResource = {
+  code: string;
+  title: string;
+  subtitle: string | null;
+  summary: string | null;
+  content: string;
+  category: {
+    code: string;
+    name: string;
+  } | null;
+  cover: {
+    url: string | null;
+    width: number | null;
+    height: number | null;
+  } | null;
+  source: string | null;
+  author: string | null;
+  published_at: string | null;
+  relations?: ArticleRelationLinkResource[];
+};
+
+export enum Relation_typeEnum {
+  'attraction' = 'attraction',
+  'scenic_spot' = 'scenic_spot',
+  'travel_route' = 'travel_route',
+  'restaurant' = 'restaurant',
+  'accommodation' = 'accommodation',
+}
+
+export type IRelation_typeEnum = keyof typeof Relation_typeEnum;
 
 export type TourismAreaResource = {
   code: string;

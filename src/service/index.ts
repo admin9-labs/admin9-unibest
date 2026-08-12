@@ -3,6 +3,7 @@
 export * from './types';
 export * from './displayEnumLabel';
 
+export * from './article';
 export * from './attraction';
 export * from './auth';
 export * from './scenicSpot';
