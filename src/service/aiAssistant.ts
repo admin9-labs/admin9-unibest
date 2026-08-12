@@ -68,7 +68,7 @@ export function publicAiAssistantsAiAssistantChatUsingPost({
   );
 }
 
-/** Stateless visitor AI answer stream. The response is SSE with start, delta, complete, and error events. The complete event is emitted only after the answer and one-time feedback reference are persisted. Cancellation or upstream failure emits error and never creates a feedback reference. The stream does not create a server-side conversation or expose provider, model, prompt, knowledge, or identity data. POST /api/public/ai-assistants/${param0}/chat/stream */
+/** Stateless visitor AI answer stream. The response is SSE with start, delta, complete, and error events. The complete event is emitted only after the answer and one-time feedback reference are persisted. Cancellation never completes, while failures after the stream starts emit an error event; neither creates a feedback reference. Validation, assistant lookup, and rate limiting happen before streaming and use normal JSON HTTP errors. The stream does not create a server-side conversation or expose provider, model, prompt, knowledge, or identity data. POST /api/public/ai-assistants/${param0}/chat/stream */
 export function publicAiAssistantsAiAssistantChatStreamUsingPost({
   params,
   body,

@@ -53,7 +53,12 @@ async function load() {
   failed.value = false
   try {
     assistant.value = await getAiAssistant(code.value)
-    categories.value = await getAiFeedbackCategories()
+    try {
+      categories.value = await getAiFeedbackCategories()
+    }
+    catch {
+      categories.value = []
+    }
     selectedCategory.value = categories.value[0]?.code || ''
     messages.value = [{
       id: ++messageId,

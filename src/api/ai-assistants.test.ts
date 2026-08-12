@@ -80,18 +80,44 @@ describe('public AI assistant API adapter', () => {
     expect(deltas).toEqual(['邛海', '适合游览。'])
   })
 
+  it('preserves SSE event state when CRLF is split across stream reads', async () => {
+    const frames = [
+      'event: start\r\ndata: {"assistant":{"code":"travel","name":"旅游助手"}}\r\n\r\n',
+      'event: delta\r\ndata: {"content":"邛海"}\r\n\r\n',
+      `event: complete\r\ndata: {"answer":"邛海","message_reference":"${'a'.repeat(64)}","message_reference_expires_at":"2026-08-14T00:00:00Z","knowledge_used_count":1}\r\n\r\n`,
+    ].join('')
+    const splitChunks = frames.split('\r').flatMap((part, index, parts) => (
+      index < parts.length - 1 ? [new TextEncoder().encode(`${part}\r`)] : [new TextEncoder().encode(part)]
+    ))
+    const reader = {
+      read: vi.fn().mockImplementation(async () => splitChunks.length
+        ? { done: false, value: splitChunks.shift() }
+        : { done: true, value: undefined }),
+    }
+    vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
+      ok: true,
+      headers: new Headers({ 'content-type': 'text/event-stream' }),
+      body: { getReader: () => reader },
+    }))
+    const events: string[] = []
+    const deltas: string[] = []
+
+    await expect(streamAiAssistant('travel', '问题', {
+      onDelta: content => deltas.push(content),
+      onEvent: event => events.push(event.event),
+    })).resolves.toMatchObject({ answer: '邛海', assistant: { code: 'travel', name: '旅游助手' } })
+    expect(events).toEqual(['start', 'delta', 'complete'])
+    expect(deltas).toEqual(['邛海'])
+  })
+
   it('stops before emitting a JSON fallback answer', async () => {
     const originalFetch = globalThis.fetch
     vi.stubGlobal('fetch', undefined)
     const controller = new AbortController()
-    let resolveChat: (value: unknown) => void = () => {}
-    service.chat.mockReturnValue(new Promise((resolve) => {
-      resolveChat = resolve
-    }))
+    service.chat.mockReturnValue(new Promise(() => {}))
     const stream = streamAiAssistant('travel', '问题', { signal: controller.signal })
 
     controller.abort()
-    resolveChat({ data: { chat: { answer: '不应显示' } } })
 
     await expect(stream).rejects.toThrow()
     vi.stubGlobal('fetch', originalFetch)

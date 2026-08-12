@@ -760,6 +760,17 @@ export type PublicAiAssistantsAiAssistantChatStreamUsingPostResponses = {
    */
   200: string;
   /**
+   * Not Found
+   */
+  404: {
+    success: false;
+    code: number;
+    message: string;
+    data: Record<string, unknown>;
+    errors: Record<string, unknown>;
+    request_id: string;
+  };
+  /**
    * Content Too Large
    */
   413: {
@@ -802,45 +813,6 @@ export type PublicAiAssistantsAiAssistantChatStreamUsingPostResponses = {
     data: Record<string, unknown>;
     errors: Record<string, unknown>;
     request_id: string;
-  };
-  /**
-   * Bad Gateway
-   */
-  502: {
-    success: false;
-    code: number;
-    message: string;
-    data: Record<string, unknown>;
-    errors: Record<string, unknown>;
-    request_id: string;
-    error_code: 'ai_provider_rejected' | 'ai_provider_invalid_response';
-  };
-  /**
-   * Service Unavailable
-   */
-  503: {
-    success: false;
-    code: number;
-    message: string;
-    data: Record<string, unknown>;
-    errors: Record<string, unknown>;
-    request_id: string;
-    error_code:
-      | 'ai_provider_unconfigured'
-      | 'ai_provider_unavailable'
-      | 'ai_provider_rate_limited';
-  };
-  /**
-   * Gateway Timeout
-   */
-  504: {
-    success: false;
-    code: number;
-    message: string;
-    data: Record<string, unknown>;
-    errors: Record<string, unknown>;
-    request_id: string;
-    error_code: 'ai_provider_timeout';
   };
 };
 

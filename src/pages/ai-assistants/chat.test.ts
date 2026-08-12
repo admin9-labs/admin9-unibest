@@ -51,4 +51,17 @@ describe('ai assistant chat page', () => {
     await request
     expect(wrapper.text()).toContain('本次回答已停止')
   })
+
+  it('keeps chat available when feedback categories cannot load', async () => {
+    api.detail.mockResolvedValueOnce({ code: 'xichang', name: '西昌文旅助手', description: null, welcome_message: '您好' })
+    api.categories.mockRejectedValueOnce(new Error('categories unavailable'))
+    const wrapper = mount(AiAssistantChat, { global: { stubs: { WdLoading: true, WdEmpty: true, WdButton: true, WdTextarea: { template: '<textarea />' }, WdRadioGroup: true, WdRadio: true, WdIcon: true } } })
+
+    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ code: 'xichang' })
+    await flushPromises()
+
+    expect(wrapper.text()).toContain('您好')
+    expect(wrapper.find('.send-button').exists()).toBe(true)
+    expect(wrapper.text()).not.toContain('AI 助手暂时无法加载')
+  })
 })

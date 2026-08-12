@@ -59,11 +59,7 @@ export async function askAiAssistant(code: string, message: string) {
 
 export async function streamAiAssistant(code: string, message: string, options: AiChatStreamOptions = {}): Promise<AiChatAnswer> {
   if (typeof globalThis.fetch !== 'function') {
-    if (options.signal?.aborted)
-      throw options.signal.reason || new DOMException('Aborted', 'AbortError')
-    const answer = await askAiAssistant(code, message)
-    if (options.signal?.aborted)
-      throw options.signal.reason || new DOMException('Aborted', 'AbortError')
+    const answer = await withAbort(askAiAssistant(code, message), options.signal)
     options.onDelta?.(answer.answer)
     return answer
   }
@@ -151,8 +147,11 @@ export async function streamAiAssistant(code: string, message: string, options: 
 
   const consume = (chunk: string, final = false) => {
     buffer += chunk
+    const trailingCarriageReturn = !final && buffer.endsWith('\r')
+    if (trailingCarriageReturn)
+      buffer = buffer.slice(0, -1)
     const lines = buffer.split(/\r\n|\n|\r/)
-    buffer = final ? '' : (lines.pop() || '')
+    buffer = final ? '' : `${lines.pop() || ''}${trailingCarriageReturn ? '\r' : ''}`
     for (const line of lines) {
       if (!line) {
         dispatch(currentEvent, currentData.join('\n'))
@@ -193,6 +192,28 @@ export async function streamAiAssistant(code: string, message: string, options: 
     ...complete,
     assistant: assistant || { code, name: code },
   }
+}
+
+function withAbort<T>(request: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal)
+    return request
+  if (signal.aborted)
+    return Promise.reject(signal.reason || new DOMException('Aborted', 'AbortError'))
+
+  return new Promise((resolve, reject) => {
+    const abort = () => reject(signal.reason || new DOMException('Aborted', 'AbortError'))
+    signal.addEventListener('abort', abort, { once: true })
+    request.then(
+      (value) => {
+        signal.removeEventListener('abort', abort)
+        resolve(value)
+      },
+      (error) => {
+        signal.removeEventListener('abort', abort)
+        reject(error)
+      },
+    )
+  })
 }
 
 export async function getAiFeedbackCategories() {
