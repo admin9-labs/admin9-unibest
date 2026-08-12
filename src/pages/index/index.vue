@@ -22,6 +22,9 @@ function openAudioGuides() {
 function openRestaurants() {
   uni.navigateTo({ url: '/pages/restaurants/index' })
 }
+function openAccommodations() {
+  uni.navigateTo({ url: '/pages/accommodations/index' })
+}
 </script>
 
 <template>
@@ -112,6 +115,17 @@ function openRestaurants() {
         </view>
       </view><wd-icon name="arrow-right" size="20" color="#69716c" />
     </view>
+    <view class="feature-row" role="button" @click="openAccommodations">
+      <view class="feature-icon accommodation-icon">
+        <wd-icon name="home" size="24" />
+      </view><view class="feature-copy">
+        <view class="feature-title">
+          住宿
+        </view><view class="feature-description">
+          查看已发布住宿、设施与参考价格
+        </view>
+      </view><wd-icon name="arrow-right" size="20" color="#69716c" />
+    </view>
   </view>
 </template>
 
@@ -193,6 +207,9 @@ function openRestaurants() {
 }
 .feature-icon.restaurant-icon {
   background: #a64532;
+}
+.feature-icon.accommodation-icon {
+  background: #2f6571;
 }
 
 .feature-copy {

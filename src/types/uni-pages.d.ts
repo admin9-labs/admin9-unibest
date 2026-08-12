@@ -5,6 +5,8 @@
 
 type _LocationUrl =
   "/pages/index/index" |
+  "/pages/accommodations/detail" |
+  "/pages/accommodations/index" |
   "/pages/articles/detail" |
   "/pages/articles/index" |
   "/pages/attractions/detail" |

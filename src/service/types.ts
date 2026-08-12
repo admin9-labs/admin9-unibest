@@ -261,6 +261,43 @@ export type DiningPlaceResource = {
   } | null;
 };
 
+export type LodgingPlaceResource = {
+  code: string;
+  name: string;
+  summary: string | null;
+  description: string | null;
+  category: {
+    code: string;
+    name: string;
+  } | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  cover: {
+    url: string;
+    width: number | null;
+    height: number | null;
+  } | null;
+  gallery?: {
+    url: string;
+    width: number | null;
+    height: number | null;
+  }[];
+  phone: string | null;
+  check_in_time: string | null;
+  check_out_time: string | null;
+  reference_price: number | null;
+  facilities: string[] | null;
+  attraction?: {
+    code: string;
+    name: string;
+  } | null;
+  scenic_spot?: {
+    code: string;
+    name: string;
+  } | null;
+};
+
 export type LoginRequest = {
   account: string;
   password: string;
@@ -281,6 +318,88 @@ export enum Node_typeEnum {
 }
 
 export type INode_typeEnum = keyof typeof Node_typeEnum;
+
+export type PublicAccommodationsAccommodationUsingGetParams = {
+  accommodation: string;
+};
+
+export type PublicAccommodationsAccommodationUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    accommodation: LodgingPlaceResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicAccommodationsAccommodationUsingGetResponses = {
+  200: PublicAccommodationsAccommodationUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: PublicAccommodationsAccommodationUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicAccommodationsAccommodationUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicAccommodationsAccommodationUsingGetResponse;
+};
+
+export type PublicAccommodationsUsingGetParams = {
+  page?: number;
+  page_size?: number;
+  keyword?: string | null;
+  category_code?: string | null;
+};
+
+export type PublicAccommodationsUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: LodgingPlaceResource[];
+  meta: {
+    /** Pagination strategy */
+    pagination: string;
+    /** Current page number */
+    page: number;
+    /** Items per page */
+    page_size: number;
+    /** Whether more pages exist */
+    has_more: boolean;
+    /** Total number of items */
+    total: number;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicAccommodationsUsingGetResponses = {
+  /**
+   * Paginated list
+   */
+  200: PublicAccommodationsUsingGetResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicAccommodationsUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicAccommodationsUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicAccommodationsUsingGetResponse;
+};
 
 export type PublicArticlesArticleUsingGetParams = {
   article: string;
