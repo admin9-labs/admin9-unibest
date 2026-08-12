@@ -42,6 +42,10 @@ function login() {
   uni.navigateTo({ url: LOGIN_PAGE })
 }
 
+function openConsultations() {
+  uni.navigateTo({ url: '/pages/consultations/member-list' })
+}
+
 async function submitPassword() {
   if (!password.current_password || password.password.length < 8 || password.password !== password.password_confirmation) {
     uni.showToast({ icon: 'none', title: '请检查密码填写，且新密码至少 8 位' })
@@ -104,6 +108,12 @@ function confirmLogout() {
           <wd-cell title="邮箱" :value="member.email || '-'" />
           <wd-cell title="手机号" :value="member.mobile || '-'" />
           <wd-cell title="最后登录" :value="member.last_login_at || '-'" />
+        </wd-cell-group>
+        <view class="section-title">
+          会员服务
+        </view>
+        <wd-cell-group border>
+          <wd-cell title="我的旅游咨询" is-link @click="openConsultations" />
         </wd-cell-group>
         <view class="section-title">
           修改密码

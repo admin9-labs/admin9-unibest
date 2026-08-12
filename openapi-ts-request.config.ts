@@ -9,7 +9,7 @@ export default defineConfig([
     describe: 'Admin9 Member API',
     schemaPath,
     serversPath,
-    includePaths: [/^\/api\/(?:auth|public)(?:\/|$)/],
+    includePaths: [/^\/api\/(?:auth|public|consultations)(?:\/|$)/],
     requestLibPath: `import request from '@/http/openapi-request';\n import type { OpenApiRequestOptions } from '@/http/types';`,
     requestOptionsType: 'OpenApiRequestOptions',
     isGenReactQuery: false,

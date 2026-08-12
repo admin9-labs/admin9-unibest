@@ -29,7 +29,7 @@ function openMap() {
   uni.navigateTo({ url: '/pages/map/index' })
 }
 function openServices() {
-  uni.navigateTo({ url: '/pages/services/index' })
+  uni.navigateTo({ url: '/pages/public-services/index' })
 }
 </script>
 
@@ -150,7 +150,7 @@ function openServices() {
         <view class="feature-title">
           旅游服务
         </view><view class="feature-description">
-          查看游客中心、交通与便民服务信息
+          查看便民信息、提交咨询并跟进进度
         </view>
       </view><wd-icon name="arrow-right" size="20" color="#69716c" />
     </view>

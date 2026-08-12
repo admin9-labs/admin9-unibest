@@ -16,6 +16,15 @@ export function displayRelationTypeEnum(field: API.Relation_typeEnum) {
   }[field];
 }
 
+export function displayStatusEnum(field: API.StatusEnum) {
+  return {
+    pending: 'pending',
+    processing: 'processing',
+    replied: 'replied',
+    closed: 'closed',
+  }[field];
+}
+
 export function displayTargetTypeEnum(field: API.Target_typeEnum) {
   return {
     attraction: 'attraction',

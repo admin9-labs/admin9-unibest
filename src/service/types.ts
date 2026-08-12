@@ -225,6 +225,161 @@ export type ChangePasswordRequest = {
   password_confirmation: string;
 };
 
+export type ConsultationCategoryResource = {
+  code: string;
+  name: string;
+};
+
+export type ConsultationProgressResource = {
+  ticket_no: string;
+  category: {
+    code: string;
+    name: string;
+  } | null;
+  subject: string;
+  content: string;
+  status: 'pending' | 'processing' | 'replied' | 'closed';
+  reply_content: string | null;
+  close_reason: string | null;
+  accepted_at: string | null;
+  replied_at: string | null;
+  closed_at: string | null;
+  created_at: string | null;
+  contact: {
+    name: string;
+    mobile: string | null;
+    email: string | null;
+  } | null;
+};
+
+export type ConsultationsConsultationUsingGetParams = {
+  consultation: string;
+};
+
+export type ConsultationsConsultationUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    consultation: ConsultationProgressResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type ConsultationsConsultationUsingGetResponses = {
+  200: ConsultationsConsultationUsingGetResponse;
+  /**
+   * Unauthorized
+   */
+  401: ConsultationsConsultationUsingGetResponse;
+  /**
+   * Forbidden
+   */
+  403: ConsultationsConsultationUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: ConsultationsConsultationUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: ConsultationsConsultationUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ConsultationsConsultationUsingGetResponse;
+};
+
+export type ConsultationsUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: ConsultationProgressResource[];
+  meta: {
+    /** Pagination strategy */
+    pagination: string;
+    /** Current page number */
+    page: number;
+    /** Items per page */
+    page_size: number;
+    /** Whether more pages exist */
+    has_more: boolean;
+    /** Total number of items */
+    total: number;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type ConsultationsUsingGetResponses = {
+  /**
+   * Paginated list
+   */
+  200: ConsultationsUsingGetResponse;
+  /**
+   * Unauthorized
+   */
+  401: ConsultationsUsingGetResponse;
+  /**
+   * Forbidden
+   */
+  403: ConsultationsUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: ConsultationsUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ConsultationsUsingGetResponse;
+};
+
+export type ConsultationsUsingPostResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    consultation: ConsultationProgressResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type ConsultationsUsingPostResponses = {
+  200: ConsultationsUsingPostResponse;
+  /**
+   * Unauthorized
+   */
+  401: ConsultationsUsingPostResponse;
+  /**
+   * Forbidden
+   */
+  403: ConsultationsUsingPostResponse;
+  /**
+   * Content Too Large
+   */
+  413: ConsultationsUsingPostResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: ConsultationsUsingPostResponse;
+  /**
+   * Too Many Requests
+   */
+  429: ConsultationsUsingPostResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ConsultationsUsingPostResponse;
+};
+
 export type DiningPlaceResource = {
   code: string;
   name: string;
@@ -649,6 +804,105 @@ export type PublicAudioGuidesUsingGetResponses = {
   500: PublicAudioGuidesUsingGetResponse;
 };
 
+export type PublicConsultationCategoriesUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: ConsultationCategoryResource[];
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicConsultationCategoriesUsingGetResponses = {
+  /**
+   * Array of `ConsultationCategoryResource`
+   */
+  200: PublicConsultationCategoriesUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicConsultationCategoriesUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicConsultationCategoriesUsingGetResponse;
+};
+
+export type PublicConsultationsQueryUsingPostResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    consultation: ConsultationProgressResource;
+    query_credential_expires_at: string;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicConsultationsQueryUsingPostResponses = {
+  200: PublicConsultationsQueryUsingPostResponse;
+  /**
+   * Not Found
+   */
+  404: PublicConsultationsQueryUsingPostResponse;
+  /**
+   * Content Too Large
+   */
+  413: PublicConsultationsQueryUsingPostResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicConsultationsQueryUsingPostResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicConsultationsQueryUsingPostResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicConsultationsQueryUsingPostResponse;
+};
+
+export type PublicConsultationsUsingPostResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    consultation: ConsultationProgressResource;
+    query_credential: string | null;
+    query_credential_expires_at: string;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicConsultationsUsingPostResponses = {
+  200: PublicConsultationsUsingPostResponse;
+  /**
+   * Content Too Large
+   */
+  413: PublicConsultationsUsingPostResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicConsultationsUsingPostResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicConsultationsUsingPostResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicConsultationsUsingPostResponse;
+};
+
 export type PublicRestaurantsRestaurantUsingGetParams = {
   restaurant: string;
 };
@@ -998,6 +1252,11 @@ export type PublishedContentResource = {
   relations?: ArticleRelationLinkResource[];
 };
 
+export type QueryConsultationRequest = {
+  ticket_no: string;
+  query_credential: string;
+};
+
 export enum Relation_typeEnum {
   'attraction' = 'attraction',
   'scenic_spot' = 'scenic_spot',
@@ -1007,6 +1266,24 @@ export enum Relation_typeEnum {
 }
 
 export type IRelation_typeEnum = keyof typeof Relation_typeEnum;
+
+export enum StatusEnum {
+  'pending' = 'pending',
+  'processing' = 'processing',
+  'replied' = 'replied',
+  'closed' = 'closed',
+}
+
+export type IStatusEnum = keyof typeof StatusEnum;
+
+export type StoreConsultationRequest = {
+  category_code: string;
+  contact_name: string;
+  contact_mobile?: string | null;
+  contact_email?: string | null;
+  subject: string;
+  content: string;
+};
 
 export enum Target_typeEnum {
   'attraction' = 'attraction',
