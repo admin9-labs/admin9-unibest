@@ -6,7 +6,7 @@ Admin9 的会员端脚手架，基于 Vue 3、TypeScript、uni-app 和 Wot UI v2
 
 - Node.js `22.23.1`，见 `.node-version`
 - pnpm `10.10.0`
-- Laravel API 仓库默认位于同级目录 `../admin9-api-laravel`
+- Laravel API 仓库默认位于同级目录 `../xichang-travel-api`
 
 使用冻结锁文件安装依赖：
 
@@ -21,7 +21,7 @@ pnpm dev:h5
 pnpm dev:mp
 ```
 
-H5 默认仅监听本机并运行在 [http://localhost:9000/](http://localhost:9000/)。开发模式下 `/api` 默认代理到同级 Laravel 仓库 `composer dev` 启动的 `http://localhost:8000`，因此 clean clone 不依赖 Herd 或 Valet。使用 Herd/Valet 时，在忽略的 `env/.env.development.local` 中设置 `VITE_APP_PROXY_TARGET=http://admin9-api-laravel.test`，或在启动命令前设置同名环境变量。跨设备调试必须显式使用 `VITE_APP_HOST=0.0.0.0 pnpm dev:h5`；微信开发者工具导入目录为 `dist/dev/mp-weixin`。
+H5 默认仅监听本机并运行在 [http://localhost:9000/](http://localhost:9000/)。开发模式下 `/api` 默认代理到当前公开 API 主机 `http://travel.wifixc.test`，对应 API Base URL 为 `http://travel.wifixc.test/api`；代理 target 不应包含 `/api`，因为客户端请求路径已经包含该前缀。需要其他环境时，在忽略的 `env/.env.development.local` 中设置 `VITE_APP_PROXY_TARGET`，或在启动命令前设置同名环境变量。跨设备调试必须显式使用 `VITE_APP_HOST=0.0.0.0 pnpm dev:h5`；微信开发者工具导入目录为 `dist/dev/mp-weixin`。
 
 `env/.env` 中的 `https://api.example.com` 是公开仓库的安全占位值，不是可用生产地址。微信开发版、体验版和正式版应分别通过 `VITE_SERVER_BASEURL__WEIXIN_DEVELOP`、`VITE_SERVER_BASEURL__WEIXIN_TRIAL`、`VITE_SERVER_BASEURL__WEIXIN_RELEASE` 配置已备案 HTTPS 请求域名。不要把凭据或秘密放入任何客户端可见的 `VITE_*` 变量。
 

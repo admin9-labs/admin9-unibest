@@ -196,7 +196,7 @@ export default defineConfig(({ command, mode }) => {
       proxy: JSON.parse(VITE_APP_PROXY_ENABLE)
         ? {
             [VITE_APP_PROXY_PREFIX]: {
-              target: VITE_APP_PROXY_TARGET || 'http://localhost:8000',
+              target: VITE_APP_PROXY_TARGET || 'http://travel.wifixc.test',
               changeOrigin: true,
             },
           }

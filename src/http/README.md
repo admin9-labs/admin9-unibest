@@ -9,4 +9,4 @@ The application has one request runtime:
 - `src/http/openapi-request.ts` adapts generator options to the uni-app runtime.
 - `src/http/http.ts` owns URLs, bearer authentication, refresh/replay, and errors.
 
-H5 development proxies `/api` to `http://admin9-api-laravel.test`. Mini Program builds use the HTTPS `VITE_SERVER_BASEURL__WEIXIN_*` values for the matching WeChat environment.
+H5 development proxies `/api` to `http://travel.wifixc.test` by default. The API Base URL is `http://travel.wifixc.test/api`, while the proxy target omits `/api` because generated client paths already include it. Mini Program builds use the HTTPS `VITE_SERVER_BASEURL__WEIXIN_*` values for the matching WeChat environment.
