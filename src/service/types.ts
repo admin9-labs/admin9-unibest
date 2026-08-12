@@ -225,6 +225,171 @@ export type ChangePasswordRequest = {
   password_confirmation: string;
 };
 
+export type ComplaintCategoryResource = {
+  code: string;
+  name: string;
+};
+
+export type ComplaintEvidenceResource = {
+  id: number;
+  url: string;
+  width: number | null;
+  height: number | null;
+};
+
+export type ComplaintProgressResource = {
+  ticket_no: string;
+  category: {
+    code: string;
+    name: string;
+  } | null;
+  target_type: string | null;
+  target_name: string;
+  title: string;
+  content: string;
+  status: 'pending' | 'processing' | 'resolved' | 'closed';
+  resolution_content: string | null;
+  close_reason: string | null;
+  accepted_at: string | null;
+  resolved_at: string | null;
+  closed_at: string | null;
+  created_at: string | null;
+  evidence: ComplaintEvidenceResource[];
+  contact: {
+    name: string;
+    mobile: string | null;
+    email: string | null;
+  } | null;
+};
+
+export type ComplaintsComplaintUsingGetParams = {
+  complaint: string;
+};
+
+export type ComplaintsComplaintUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    complaint: ComplaintProgressResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type ComplaintsComplaintUsingGetResponses = {
+  200: ComplaintsComplaintUsingGetResponse;
+  /**
+   * Unauthorized
+   */
+  401: ComplaintsComplaintUsingGetResponse;
+  /**
+   * Forbidden
+   */
+  403: ComplaintsComplaintUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: ComplaintsComplaintUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: ComplaintsComplaintUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ComplaintsComplaintUsingGetResponse;
+};
+
+export type ComplaintsUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: ComplaintProgressResource[];
+  meta: {
+    /** Pagination strategy */
+    pagination: string;
+    /** Current page number */
+    page: number;
+    /** Items per page */
+    page_size: number;
+    /** Whether more pages exist */
+    has_more: boolean;
+    /** Total number of items */
+    total: number;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type ComplaintsUsingGetResponses = {
+  /**
+   * Paginated list
+   */
+  200: ComplaintsUsingGetResponse;
+  /**
+   * Unauthorized
+   */
+  401: ComplaintsUsingGetResponse;
+  /**
+   * Forbidden
+   */
+  403: ComplaintsUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: ComplaintsUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ComplaintsUsingGetResponse;
+};
+
+export type ComplaintsUsingPostResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    complaint: ComplaintProgressResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type ComplaintsUsingPostResponses = {
+  200: ComplaintsUsingPostResponse;
+  /**
+   * Unauthorized
+   */
+  401: ComplaintsUsingPostResponse;
+  /**
+   * Forbidden
+   */
+  403: ComplaintsUsingPostResponse;
+  /**
+   * Content Too Large
+   */
+  413: ComplaintsUsingPostResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: ComplaintsUsingPostResponse;
+  /**
+   * Too Many Requests
+   */
+  429: ComplaintsUsingPostResponse;
+  /**
+   * Internal Server Error
+   */
+  500: ComplaintsUsingPostResponse;
+};
+
 export type ConsultationCategoryResource = {
   code: string;
   name: string;
@@ -804,6 +969,144 @@ export type PublicAudioGuidesUsingGetResponses = {
   500: PublicAudioGuidesUsingGetResponse;
 };
 
+export type PublicComplaintCategoriesUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: ComplaintCategoryResource[];
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicComplaintCategoriesUsingGetResponses = {
+  /**
+   * Array of `ComplaintCategoryResource`
+   */
+  200: PublicComplaintCategoriesUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicComplaintCategoriesUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicComplaintCategoriesUsingGetResponse;
+};
+
+export type PublicComplaintEvidenceUsingPostResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    evidence: ComplaintEvidenceResource;
+    upload_token: string;
+    upload_token_expires_at: string;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicComplaintEvidenceUsingPostResponses = {
+  200: PublicComplaintEvidenceUsingPostResponse;
+  /**
+   * Content Too Large
+   */
+  413: PublicComplaintEvidenceUsingPostResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicComplaintEvidenceUsingPostResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicComplaintEvidenceUsingPostResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicComplaintEvidenceUsingPostResponse;
+};
+
+export type PublicComplaintsQueryUsingPostResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    complaint: ComplaintProgressResource;
+    query_credential_expires_at: string;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicComplaintsQueryUsingPostResponses = {
+  200: PublicComplaintsQueryUsingPostResponse;
+  /**
+   * Not Found
+   */
+  404: PublicComplaintsQueryUsingPostResponse;
+  /**
+   * Content Too Large
+   */
+  413: PublicComplaintsQueryUsingPostResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicComplaintsQueryUsingPostResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicComplaintsQueryUsingPostResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicComplaintsQueryUsingPostResponse;
+};
+
+export type PublicComplaintsUsingPostResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    complaint: ComplaintProgressResource;
+    query_credential: string | null;
+    query_credential_expires_at: string;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicComplaintsUsingPostResponses = {
+  200: PublicComplaintsUsingPostResponse;
+  /**
+   * Not Found
+   */
+  404: PublicComplaintsUsingPostResponse;
+  /**
+   * Content Too Large
+   */
+  413: PublicComplaintsUsingPostResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicComplaintsUsingPostResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicComplaintsUsingPostResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicComplaintsUsingPostResponse;
+};
+
 export type PublicConsultationCategoriesUsingGetResponse = {
   /** Whether the request was successful */
   success: boolean;
@@ -1252,6 +1555,11 @@ export type PublishedContentResource = {
   relations?: ArticleRelationLinkResource[];
 };
 
+export type QueryComplaintRequest = {
+  ticket_no: string;
+  query_credential: string;
+};
+
 export type QueryConsultationRequest = {
   ticket_no: string;
   query_credential: string;
@@ -1270,11 +1578,39 @@ export type IRelation_typeEnum = keyof typeof Relation_typeEnum;
 export enum StatusEnum {
   'pending' = 'pending',
   'processing' = 'processing',
-  'replied' = 'replied',
+  'resolved' = 'resolved',
   'closed' = 'closed',
 }
 
 export type IStatusEnum = keyof typeof StatusEnum;
+
+export enum StatusEnum2 {
+  'pending' = 'pending',
+  'processing' = 'processing',
+  'replied' = 'replied',
+  'closed' = 'closed',
+}
+
+export type IStatusEnum2 = keyof typeof StatusEnum2;
+
+export type StoreComplaintEvidenceRequest = {
+  file: string;
+};
+
+export type StoreComplaintRequest = {
+  category_code: string;
+  contact_name: string;
+  contact_mobile?: string | null;
+  contact_email?: string | null;
+  target_type?: string | null;
+  target_name: string;
+  title: string;
+  content: string;
+  evidence?: {
+    media_id: number;
+    upload_token: string;
+  }[];
+};
 
 export type StoreConsultationRequest = {
   category_code: string;

@@ -14,8 +14,35 @@ function open(url: string) {
       <view class="title">
         公共服务
       </view><view class="description">
-        查询便民信息，提交咨询并跟进办理进度。
+        查询便民信息，提交咨询或投诉并跟进办理进度。
       </view>
+    </view>
+    <view class="entry" role="link" @click="open('/pages/complaints/submit')">
+      <wd-icon name="warning" size="28" /><view>
+        <view class="entry-title">
+          提交旅游投诉
+        </view><view class="entry-copy">
+          游客无需登录，可上传图片凭证
+        </view>
+      </view><wd-icon name="arrow-right" />
+    </view>
+    <view class="entry" role="link" @click="open('/pages/complaints/query')">
+      <wd-icon name="search" size="28" /><view>
+        <view class="entry-title">
+          查询投诉进度
+        </view><view class="entry-copy">
+          使用工单号与安全查询凭证
+        </view>
+      </view><wd-icon name="arrow-right" />
+    </view>
+    <view class="entry" role="link" @click="open('/pages/complaints/member-list')">
+      <wd-icon name="user" size="28" /><view>
+        <view class="entry-title">
+          我的投诉
+        </view><view class="entry-copy">
+          {{ tokenStore.hasLogin ? '查看本人已提交记录' : '登录后查看本人记录' }}
+        </view>
+      </view><wd-icon name="arrow-right" />
     </view>
     <view class="entry" role="link" @click="open('/pages/services/index')">
       <wd-icon name="service" size="28" /><view>
@@ -44,17 +71,7 @@ function open(url: string) {
         </view>
       </view><wd-icon name="arrow-right" />
     </view>
-    <view
-      class="entry"
-      role="link"
-      @click="
-        open(
-          tokenStore.hasLogin
-            ? '/pages/consultations/member-list'
-            : '/pages/auth/login?redirect=%2Fpages%2Fconsultations%2Fmember-list',
-        )
-      "
-    >
+    <view class="entry" role="link" @click="open('/pages/consultations/member-list')">
       <wd-icon name="user" size="28" /><view>
         <view class="entry-title">
           我的咨询

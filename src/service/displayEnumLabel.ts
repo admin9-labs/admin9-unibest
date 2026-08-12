@@ -20,6 +20,15 @@ export function displayStatusEnum(field: API.StatusEnum) {
   return {
     pending: 'pending',
     processing: 'processing',
+    resolved: 'resolved',
+    closed: 'closed',
+  }[field];
+}
+
+export function displayStatusEnum2(field: API.StatusEnum2) {
+  return {
+    pending: 'pending',
+    processing: 'processing',
     replied: 'replied',
     closed: 'closed',
   }[field];

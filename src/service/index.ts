@@ -8,6 +8,7 @@ export * from './article';
 export * from './attraction';
 export * from './audioGuide';
 export * from './auth';
+export * from './complaint';
 export * from './consultation';
 export * from './restaurant';
 export * from './scenicSpot';

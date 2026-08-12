@@ -14,6 +14,12 @@ type _LocationUrl =
   "/pages/audio-guides/detail" |
   "/pages/audio-guides/index" |
   "/pages/auth/login" |
+  "/pages/complaints/detail" |
+  "/pages/complaints/member-detail" |
+  "/pages/complaints/member-list" |
+  "/pages/complaints/query" |
+  "/pages/complaints/receipt" |
+  "/pages/complaints/submit" |
   "/pages/consultations/detail" |
   "/pages/consultations/member-detail" |
   "/pages/consultations/member-list" |

@@ -8,7 +8,10 @@ vi.mock('@/store/token', () => ({
 }))
 
 vi.mock('@/utils/index', () => ({
-  getAllPages: () => [{ path: '/pages/me/me' }],
+  getAllPages: () => [
+    { path: '/pages/me/me' },
+    { path: '/pages/complaints/member-list' },
+  ],
   getLastPage: () => ({ route: '/pages/index/index' }),
   HOME_PAGE: '/pages/index/index',
 }))
@@ -25,6 +28,16 @@ describe('authentication route interceptor', () => {
 
     expect(uni.navigateTo).toHaveBeenCalledWith({
       url: expect.stringMatching(/^\/pages\/auth\/login\?redirect=/),
+    })
+  })
+
+  it('keeps a protected path canonical at the login redirect boundary', () => {
+    expect(navigateToInterceptor.invoke({
+      url: '/pages/complaints/member-list',
+    })).toBe(false)
+
+    expect(uni.navigateTo).toHaveBeenCalledWith({
+      url: '/pages/auth/login?redirect=/pages/complaints/member-list',
     })
   })
 

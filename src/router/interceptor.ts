@@ -86,7 +86,10 @@ export const navigateToInterceptor = {
     if (Object.keys(myQuery).length) {
       fullPath += `?${stringifyQuery(myQuery)}`
     }
-    const redirectUrl = `${LOGIN_PAGE}?redirect=${encodeURIComponent(fullPath)}`
+    // uni-app H5 escapes percent signs in navigateTo URLs. Keep simple internal
+    // paths canonical so the browser URL does not acquire a double-encoded value.
+    const redirectTarget = fullPath.includes('?') ? encodeURIComponent(fullPath) : fullPath
+    const redirectUrl = `${LOGIN_PAGE}?redirect=${redirectTarget}`
 
     // #region 1/2 默认需要登录的情况(白名单策略) ---------------------------
     if (isNeedLoginMode) {
