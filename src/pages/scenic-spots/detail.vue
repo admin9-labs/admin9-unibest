@@ -5,7 +5,7 @@ import { ref } from 'vue'
 import { getScenicSpot } from '@/api/scenic-spots'
 
 defineOptions({ name: 'ScenicSpotDetail' })
-definePage({ style: { navigationBarTitleText: '景区详情' } })
+definePage({ style: { navigationBarTitleText: '景点详情' } })
 
 const code = ref('')
 const scenicSpot = ref<ScenicSpot | null>(null)
@@ -52,19 +52,19 @@ onLoad((query) => {
 <template>
   <view class="page">
     <view v-if="loading" class="state">
-      <wd-loading text="正在加载景区详情" />
+      <wd-loading text="正在加载景点详情" />
     </view>
     <view v-else-if="notFound" class="state">
-      <wd-empty tip="该景区不存在或已停止展示">
+      <wd-empty tip="该景点不存在或已停止展示">
         <template #bottom>
           <wd-button size="small" @click="returnToList">
-            返回景区列表
+            返回景点列表
           </wd-button>
         </template>
       </wd-empty>
     </view>
     <view v-else-if="failed" class="state">
-      <wd-empty icon="network" tip="景区详情暂时无法加载">
+      <wd-empty icon="network" tip="景点详情暂时无法加载">
         <template #bottom>
           <wd-button size="small" @click="load">
             重新加载
@@ -97,7 +97,7 @@ onLoad((query) => {
         </view>
         <view v-if="scenicSpot.description" class="section">
           <view class="section-title">
-            景区介绍
+            景点介绍
           </view>
           <view class="description">
             {{ scenicSpot.description }}

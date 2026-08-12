@@ -208,6 +208,88 @@ export type MemberResource = {
   last_login_at: string | null;
 };
 
+export type PublicAttractionsAttractionUsingGetParams = {
+  attraction: string;
+};
+
+export type PublicAttractionsAttractionUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    attraction: TourismAreaResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicAttractionsAttractionUsingGetResponses = {
+  200: PublicAttractionsAttractionUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: PublicAttractionsAttractionUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicAttractionsAttractionUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicAttractionsAttractionUsingGetResponse;
+};
+
+export type PublicAttractionsUsingGetParams = {
+  page?: number;
+  page_size?: number;
+  keyword?: string | null;
+  is_recommended?: boolean;
+};
+
+export type PublicAttractionsUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: TourismAreaResource[];
+  meta: {
+    /** Pagination strategy */
+    pagination: string;
+    /** Current page number */
+    page: number;
+    /** Items per page */
+    page_size: number;
+    /** Whether more pages exist */
+    has_more: boolean;
+    /** Total number of items */
+    total: number;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicAttractionsUsingGetResponses = {
+  /**
+   * Paginated list
+   */
+  200: PublicAttractionsUsingGetResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicAttractionsUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicAttractionsUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicAttractionsUsingGetResponse;
+};
+
 export type PublicScenicSpotsScenicSpotUsingGetParams = {
   scenicSpot: string;
 };
@@ -288,6 +370,25 @@ export type PublicScenicSpotsUsingGetResponses = {
    * Internal Server Error
    */
   500: PublicScenicSpotsUsingGetResponse;
+};
+
+export type TourismAreaResource = {
+  code: string;
+  name: string;
+  summary: string | null;
+  description: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  cover: {
+    url: string | null;
+    width: number | null;
+    height: number | null;
+  } | null;
+  phone: string | null;
+  opening_hours: string | null;
+  ticket_info: string | null;
+  scenic_spots?: TourismDestinationResource[];
 };
 
 export type TourismDestinationResource = {

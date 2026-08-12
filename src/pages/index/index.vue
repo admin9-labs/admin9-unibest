@@ -2,6 +2,10 @@
 defineOptions({ name: 'Home' })
 definePage({ type: 'home', style: { navigationBarTitleText: '旅享西昌' } })
 
+function openAttractions() {
+  uni.navigateTo({ url: '/pages/attractions/index' })
+}
+
 function openScenicSpots() {
   uni.navigateTo({ url: '/pages/scenic-spots/index' })
 }
@@ -21,7 +25,7 @@ function openScenicSpots() {
     <view class="section-title">
       探索目的地
     </view>
-    <view class="feature-row" role="button" @click="openScenicSpots">
+    <view class="feature-row" role="button" @click="openAttractions">
       <view class="feature-icon">
         <wd-icon name="location" size="24" />
       </view>
@@ -31,6 +35,20 @@ function openScenicSpots() {
         </view>
         <view class="feature-description">
           查看已发布景区、开放时间与位置
+        </view>
+      </view>
+      <wd-icon name="arrow-right" size="20" color="#69716c" />
+    </view>
+    <view class="feature-row" role="button" @click="openScenicSpots">
+      <view class="feature-icon secondary">
+        <wd-icon name="view" size="24" />
+      </view>
+      <view class="feature-copy">
+        <view class="feature-title">
+          景点
+        </view>
+        <view class="feature-description">
+          发现景区内外值得停留的具体景点
         </view>
       </view>
       <wd-icon name="arrow-right" size="20" color="#69716c" />
@@ -88,6 +106,9 @@ function openScenicSpots() {
   border-radius: 8px;
   box-sizing: border-box;
 }
+.feature-row + .feature-row {
+  margin-top: 20rpx;
+}
 
 .feature-icon {
   display: flex;
@@ -98,6 +119,9 @@ function openScenicSpots() {
   color: #fff;
   background: #23744f;
   border-radius: 8px;
+}
+.feature-icon.secondary {
+  background: #365f75;
 }
 
 .feature-copy {

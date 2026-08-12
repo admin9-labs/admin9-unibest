@@ -14,7 +14,7 @@ function mountPage() {
       stubs: {
         WdButton,
         WdSearch: { template: '<input>' },
-        WdLoading: { template: '<div>正在加载景区</div>' },
+        WdLoading: { template: '<div>正在加载景点</div>' },
         WdEmpty: { props: ['tip'], template: '<div>{{ tip }}<slot name="bottom" /></div>' },
         WdImg: true,
         WdIcon: true,
@@ -42,10 +42,10 @@ describe('scenic spot list page', () => {
     const load = vi.mocked(onLoad).mock.calls.at(-1)?.[0]
     await load?.()
     await flushPromises()
-    expect(wrapper.text()).toContain('景区信息暂时无法加载')
+    expect(wrapper.text()).toContain('景点信息暂时无法加载')
 
     await wrapper.get('button').trigger('click')
     await flushPromises()
-    expect(wrapper.text()).toContain('暂无符合条件的景区')
+    expect(wrapper.text()).toContain('暂无符合条件的景点')
   })
 })

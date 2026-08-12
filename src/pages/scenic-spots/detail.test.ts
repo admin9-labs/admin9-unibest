@@ -13,7 +13,7 @@ function mountPage() {
     global: {
       stubs: {
         WdButton,
-        WdLoading: { template: '<div>正在加载景区详情</div>' },
+        WdLoading: { template: '<div>正在加载景点详情</div>' },
         WdEmpty: { props: ['tip'], template: '<div>{{ tip }}<slot name="bottom" /></div>' },
         WdImg: true,
         WdIcon: true,
