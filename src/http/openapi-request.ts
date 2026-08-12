@@ -1,9 +1,11 @@
 import type { OpenApiRequestOptions } from './types'
 import { http } from './http'
 
-export default function request<T extends { data: unknown }>(url: string, options: OpenApiRequestOptions) {
+type OpenApiResponseData<T> = T extends { data: infer Data } ? Data : T
+
+export default function request<T>(url: string, options: OpenApiRequestOptions) {
   const { params, headers, ...rest } = options
-  return http<T['data']>({
+  return http<OpenApiResponseData<T>>({
     ...rest,
     url,
     query: params,

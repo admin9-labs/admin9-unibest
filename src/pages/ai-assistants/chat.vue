@@ -1,13 +1,26 @@
 <script lang="ts" setup>
 import type { AiAssistant, AiChatAnswer, AiFeedbackCategory } from '@/api/ai-assistants'
-import { ref } from 'vue'
-import { askAiAssistant, getAiAssistant, getAiFeedbackCategories, submitAiFeedback } from '@/api/ai-assistants'
+import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
+import { getAiAssistant, getAiFeedbackCategories, streamAiAssistant, submitAiFeedback } from '@/api/ai-assistants'
 
 definePage({ style: { navigationBarTitleText: 'AI 文旅问答' } })
+
+interface ChatMessage {
+  id: number
+  question: string
+  answer: string
+  state: 'streaming' | 'complete' | 'error' | 'cancelled'
+  answerData: AiChatAnswer | null
+  error: string
+  feedbackSent: boolean
+  feedbackCategory: string
+}
+
 const code = ref('')
 const assistant = ref<AiAssistant | null>(null)
 const question = ref('')
 const answer = ref<AiChatAnswer | null>(null)
+const messages = ref<ChatMessage[]>([])
 const categories = ref<AiFeedbackCategory[]>([])
 const selectedCategory = ref('')
 const loading = ref(true)
@@ -16,6 +29,18 @@ const failed = ref(false)
 const asking = ref(false)
 const feedbackSubmitting = ref(false)
 const feedbackSent = ref(false)
+const abortController = ref<AbortController | null>(null)
+let messageId = 0
+
+const canSend = computed(() => !!question.value.trim() && !asking.value)
+
+async function scrollToLatestMessage() {
+  await nextTick()
+  // The page uses normal document scrolling on H5, so this also keeps the composer
+  // visible after the keyboard resizes the viewport.
+  if (typeof uni.pageScrollTo === 'function')
+    uni.pageScrollTo({ scrollTop: 999999, duration: 0 })
+}
 
 async function load() {
   if (!code.value) {
@@ -30,6 +55,16 @@ async function load() {
     assistant.value = await getAiAssistant(code.value)
     categories.value = await getAiFeedbackCategories()
     selectedCategory.value = categories.value[0]?.code || ''
+    messages.value = [{
+      id: ++messageId,
+      question: '',
+      answer: assistant.value.welcome_message,
+      state: 'complete',
+      answerData: null,
+      error: '',
+      feedbackSent: false,
+      feedbackCategory: categories.value[0]?.code || '',
+    }]
   }
   catch (error) {
     notFound.value = (error as { statusCode?: number }).statusCode === 404
@@ -39,6 +74,7 @@ async function load() {
     loading.value = false
   }
 }
+
 async function ask() {
   const message = question.value.trim()
   if (!message) {
@@ -47,31 +83,95 @@ async function ask() {
   }
   if (asking.value)
     return
-  asking.value = true
-  feedbackSent.value = false
+
+  const draft: ChatMessage = {
+    id: ++messageId,
+    question: message,
+    answer: '',
+    state: 'streaming',
+    answerData: null,
+    error: '',
+    feedbackSent: false,
+    feedbackCategory: categories.value[0]?.code || '',
+  }
+  messages.value.push(draft)
+  question.value = ''
+  await runStream(messages.value[messages.value.length - 1])
+}
+
+async function runStream(draft: ChatMessage) {
+  if (asking.value)
+    return
   answer.value = null
+  feedbackSent.value = false
+  asking.value = true
+  const controller = new AbortController()
+  abortController.value = controller
+  await scrollToLatestMessage()
   try {
-    answer.value = await askAiAssistant(code.value, message)
+    const result = await streamAiAssistant(code.value, draft.question, {
+      signal: controller.signal,
+      onDelta(content) {
+        draft.answer += content
+        void scrollToLatestMessage()
+      },
+    })
+    draft.answerData = result
+    draft.answer = result.answer
+    draft.state = 'complete'
+    answer.value = result
+    await scrollToLatestMessage()
   }
   catch (error) {
-    const status = (error as { statusCode?: number }).statusCode
-    uni.showToast({ icon: 'none', title: status === 429 ? '提问较频繁，请稍后再试' : '暂时无法回答，请稍后重试' })
+    if (controller.signal.aborted) {
+      draft.state = 'cancelled'
+    }
+    else {
+      draft.state = 'error'
+      draft.error = (error as Error).message || '暂时无法回答，请稍后重试'
+      uni.showToast({ icon: 'none', title: draft.error })
+    }
+    await scrollToLatestMessage()
   }
   finally {
+    if (abortController.value === controller)
+      abortController.value = null
     asking.value = false
   }
 }
-async function feedback(rating: 'helpful' | 'unhelpful') {
-  if (!answer.value || !selectedCategory.value || feedbackSubmitting.value)
+
+async function retry(target: ChatMessage) {
+  if (!target.question || asking.value)
+    return
+  target.answer = ''
+  target.answerData = null
+  target.error = ''
+  target.state = 'streaming'
+  await runStream(target)
+}
+
+function stop() {
+  abortController.value?.abort()
+}
+
+async function feedback(target: ChatMessage | 'helpful' | 'unhelpful', requestedRating?: 'helpful' | 'unhelpful') {
+  const message = typeof target === 'string'
+    ? [...messages.value].reverse().find(item => item.answerData)
+    : target
+  const rating = typeof target === 'string' ? target : requestedRating
+  const answerData = message?.answerData || answer.value
+  if (!message || !rating || !answerData || !message.feedbackCategory || feedbackSubmitting.value || message.feedbackSent)
     return
   feedbackSubmitting.value = true
   try {
     await submitAiFeedback({
-      message_reference: answer.value.message_reference,
+      message_reference: answerData.message_reference,
       rating,
-      category_code: selectedCategory.value,
+      category_code: message.feedbackCategory,
     })
+    message.feedbackSent = true
     feedbackSent.value = true
+    answer.value = answerData
     uni.showToast({ icon: 'success', title: '感谢您的反馈' })
   }
   catch {
@@ -81,10 +181,19 @@ async function feedback(rating: 'helpful' | 'unhelpful') {
     feedbackSubmitting.value = false
   }
 }
+
+function isFeedbackVisible(message: ChatMessage) {
+  return message.state === 'complete' && !!message.answerData && !message.feedbackSent && categories.value.length > 0
+}
+
 onLoad((query) => {
   code.value = typeof query?.code === 'string' ? decodeURIComponent(query.code) : ''
   load()
 })
+onBeforeUnmount(() => abortController.value?.abort())
+
+// Kept as a page method for existing callers and focused page tests.
+defineExpose({ question, answer, messages, asking, ask, stop, feedback })
 </script>
 
 <template>
@@ -106,53 +215,99 @@ onLoad((query) => {
     </view>
     <template v-else-if="assistant">
       <view class="assistant-header">
-        <view class="assistant-name">
-          {{ assistant.name }}
+        <view class="assistant-mark">
+          <wd-icon name="chat" size="24" />
         </view>
-        <view class="welcome">
-          {{ assistant.welcome_message }}
-        </view>
-      </view>
-      <view class="ask-panel">
-        <wd-textarea v-model="question" :maxlength="2000" show-word-limit auto-height placeholder="例如：邛海周边有哪些适合游览的地方？" />
-        <wd-button block size="large" :loading="asking" @click="ask">
-          发送问题
-        </wd-button>
-      </view>
-      <view v-if="answer" class="answer-panel">
-        <view class="answer-label">
-          回答
-        </view>
-        <view class="answer-text">
-          {{ answer.answer }}
-        </view>
-        <view class="answer-meta">
-          参考 {{ answer.knowledge_used_count }} 条已审核知识
-        </view>
-        <view v-if="!feedbackSent && categories.length" class="feedback">
-          <view class="feedback-title">
-            这条回答是否有帮助？
-          </view>
-          <wd-radio-group v-model="selectedCategory" shape="button">
-            <wd-radio v-for="item in categories" :key="item.code" :value="item.code">
-              {{ item.name }}
-            </wd-radio>
-          </wd-radio-group>
-          <view class="feedback-actions">
-            <wd-button plain :loading="feedbackSubmitting" @click="feedback('helpful')">
-              有帮助
-            </wd-button>
-            <wd-button plain type="warning" :loading="feedbackSubmitting" @click="feedback('unhelpful')">
-              需改进
-            </wd-button>
+        <view class="assistant-copy">
+          <view class="assistant-name">
+            {{ assistant.name }}
           </view>
         </view>
-        <view v-else-if="feedbackSent" class="feedback-done">
-          反馈已提交
+      </view>
+
+      <view class="messages" aria-live="polite">
+        <view v-if="!messages.length" class="empty-conversation">
+          <view class="empty-title">
+            从一个西昌问题开始
+          </view>
+          <view class="empty-copy">
+            可以问景点、线路、餐饮、住宿或游客服务。
+          </view>
+        </view>
+        <view v-for="item in messages" :key="item.id" class="message-group">
+          <view v-if="item.question" class="message user-message">
+            <view class="message-label">
+              您
+            </view>
+            <view class="bubble user-bubble">
+              {{ item.question }}
+            </view>
+          </view>
+          <view class="message assistant-message">
+            <view class="message-label">
+              {{ assistant.name }}
+            </view>
+            <view class="bubble assistant-bubble">
+              <view v-if="item.answer" class="answer-text">
+                {{ item.answer }}
+              </view>
+              <view v-else-if="item.state === 'streaming'" class="typing">
+                <view /><view /><view />
+              </view>
+              <view v-if="item.state === 'streaming'" class="streaming-label">
+                正在整理已审核的西昌文旅信息…
+              </view>
+              <view v-else-if="item.state === 'cancelled'" class="cancelled-label">
+                本次回答已停止
+              </view>
+              <view v-else-if="item.state === 'error'" class="error-label">
+                {{ item.error }}
+                <wd-button size="small" plain @click="retry(item)">
+                  重试
+                </wd-button>
+              </view>
+              <view v-if="item.answerData" class="answer-meta">
+                参考 {{ item.answerData.knowledge_used_count }} 条已审核知识
+              </view>
+            </view>
+            <view v-if="isFeedbackVisible(item)" class="feedback">
+              <view class="feedback-title">
+                这条回答是否有帮助？
+              </view>
+              <wd-radio-group v-model="item.feedbackCategory" shape="button">
+                <wd-radio v-for="category in categories" :key="category.code" :value="category.code">
+                  {{ category.name }}
+                </wd-radio>
+              </wd-radio-group>
+              <view class="feedback-actions">
+                <wd-button plain :loading="feedbackSubmitting" @click="feedback(item, 'helpful')">
+                  有帮助
+                </wd-button>
+                <wd-button plain type="warning" :loading="feedbackSubmitting" @click="feedback(item, 'unhelpful')">
+                  需改进
+                </wd-button>
+              </view>
+            </view>
+            <view v-else-if="item.feedbackSent" class="feedback-done">
+              反馈已提交
+            </view>
+          </view>
         </view>
       </view>
-      <view class="notice">
-        AI 回答仅供游览参考，实时开放、交通和应急信息请以官方渠道为准。
+
+      <view class="composer">
+        <wd-textarea v-model="question" :maxlength="2000" show-word-limit auto-height adjust-position :cursor-spacing="24" placeholder="例如：邛海周边有哪些适合游览的地方？" />
+        <view class="composer-actions">
+          <view class="composer-hint">
+            回答仅供游览参考，请以官方实时信息为准。
+          </view>
+          <wd-button v-if="asking" class="stop-button" plain type="warning" @click="stop">
+            停止回答
+          </wd-button>
+          <wd-button v-else class="send-button" size="large" :disabled="!canSend" @click="ask">
+            发送问题
+          </wd-button>
+        </view>
       </view>
     </template>
   </view>
@@ -161,7 +316,7 @@ onLoad((query) => {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  padding: 28rpx;
+  padding: 24rpx 28rpx 38rpx;
   background: #f4f6f3;
   box-sizing: border-box;
 }
@@ -171,75 +326,182 @@ onLoad((query) => {
   align-items: center;
   justify-content: center;
 }
-.assistant-header,
-.ask-panel,
-.answer-panel {
-  padding: 28rpx 24rpx;
+.assistant-header {
+  display: flex;
+  align-items: center;
+  padding: 24rpx;
   background: #fff;
   border: 1px solid #dbe4df;
   border-radius: 8px;
 }
-.ask-panel,
-.answer-panel {
-  margin-top: 20rpx;
+.assistant-mark {
+  display: flex;
+  width: 68rpx;
+  height: 68rpx;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  background: #5d4d78;
+  border-radius: 8px;
+}
+.assistant-copy {
+  min-width: 0;
+  margin-left: 18rpx;
 }
 .assistant-name {
   color: #17211c;
-  font-size: 38rpx;
+  font-size: 32rpx;
   font-weight: 700;
-}
-.welcome {
-  margin-top: 12rpx;
-  color: #59635e;
-  font-size: 26rpx;
-  line-height: 1.65;
-}
-.ask-panel :deep(.wd-button) {
-  margin-top: 22rpx;
-}
-.answer-label {
-  color: #5d4d78;
-  font-size: 23rpx;
-  font-weight: 600;
-}
-.answer-text {
-  margin-top: 12rpx;
-  color: #17211c;
-  font-size: 29rpx;
-  line-height: 1.75;
-  white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
-.answer-meta {
-  margin-top: 18rpx;
+.welcome {
+  margin-top: 6rpx;
+  color: #69716c;
+  font-size: 24rpx;
+  line-height: 1.55;
+  overflow-wrap: anywhere;
+}
+.messages {
+  padding: 26rpx 0 12rpx;
+}
+.empty-conversation {
+  padding: 72rpx 20rpx;
+  text-align: center;
+}
+.empty-title {
+  color: #25302a;
+  font-size: 32rpx;
+  font-weight: 650;
+}
+.empty-copy {
+  margin-top: 10rpx;
   color: #7b837f;
-  font-size: 22rpx;
+  font-size: 24rpx;
+}
+.message-group + .message-group {
+  margin-top: 28rpx;
+}
+.message {
+  display: flex;
+  flex-direction: column;
+  max-width: 92%;
+}
+.user-message {
+  margin-left: auto;
+  align-items: flex-end;
+}
+.assistant-message {
+  margin-right: auto;
+  align-items: flex-start;
+}
+.message-label {
+  margin-bottom: 8rpx;
+  color: #69716c;
+  font-size: 21rpx;
+}
+.bubble {
+  padding: 20rpx 22rpx;
+  border-radius: 8px;
+  font-size: 27rpx;
+  line-height: 1.72;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+.user-bubble {
+  color: #fff;
+  background: #5d4d78;
+}
+.assistant-bubble {
+  min-width: 180rpx;
+  color: #25302a;
+  background: #fff;
+  border: 1px solid #dbe4df;
+}
+.answer-text {
+  color: #17211c;
+}
+.answer-meta {
+  margin-top: 16rpx;
+  color: #7b837f;
+  font-size: 21rpx;
+  line-height: 1.4;
+}
+.streaming-label {
+  margin-top: 10rpx;
+  color: #7b837f;
+  font-size: 21rpx;
+}
+.typing {
+  display: flex;
+  gap: 8rpx;
+  align-items: center;
+  min-height: 30rpx;
+}
+.typing view {
+  width: 10rpx;
+  height: 10rpx;
+  background: #8a7da0;
+  border-radius: 50%;
+}
+.cancelled-label,
+.error-label {
+  color: #8c5f48;
+  font-size: 24rpx;
 }
 .feedback {
-  margin-top: 28rpx;
-  padding-top: 24rpx;
+  width: 100%;
+  margin-top: 20rpx;
+  padding-top: 20rpx;
   border-top: 1px solid #e4e8e5;
 }
 .feedback-title {
-  margin-bottom: 16rpx;
+  margin-bottom: 14rpx;
   color: #27312c;
-  font-size: 26rpx;
+  font-size: 24rpx;
   font-weight: 600;
 }
 .feedback-actions {
   display: flex;
-  gap: 16rpx;
-  margin-top: 18rpx;
+  gap: 14rpx;
+  margin-top: 16rpx;
 }
 .feedback-done {
-  margin-top: 24rpx;
+  margin-top: 18rpx;
   color: #23744f;
-  font-size: 25rpx;
+  font-size: 23rpx;
 }
-.notice {
-  padding: 24rpx 10rpx;
+.composer {
+  position: sticky;
+  bottom: 16rpx;
+  z-index: 2;
+  margin-top: 12rpx;
+  padding: 20rpx;
+  background: rgba(255, 255, 255, 0.98);
+  border: 1px solid #dbe4df;
+  border-radius: 8px;
+  box-shadow: 0 8rpx 28rpx rgba(38, 49, 43, 0.08);
+}
+.composer-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 16rpx;
+  margin-top: 16rpx;
+}
+.composer-hint {
+  width: 100%;
   color: #7b837f;
-  font-size: 22rpx;
-  line-height: 1.6;
+  font-size: 20rpx;
+  line-height: 1.45;
+}
+.composer-actions :deep(.wd-button) {
+  width: 100%;
+  box-sizing: border-box;
+}
+.stop-button {
+  align-self: flex-end;
+  width: auto !important;
+  min-width: 190rpx;
 }
 </style>

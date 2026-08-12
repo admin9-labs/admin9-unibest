@@ -750,6 +750,100 @@ export type PublicAiAssistantResource = {
   welcome_message: string;
 };
 
+export type PublicAiAssistantsAiAssistantChatStreamUsingPostParams = {
+  aiAssistant: string;
+};
+
+export type PublicAiAssistantsAiAssistantChatStreamUsingPostResponses = {
+  /**
+   * SSE text/event-stream. Events: start, delta, complete, error.
+   */
+  200: string;
+  /**
+   * Content Too Large
+   */
+  413: {
+    success: false;
+    code: number;
+    message: string;
+    data: Record<string, unknown>;
+    errors: Record<string, unknown>;
+    request_id: string;
+  };
+  /**
+   * Unprocessable Content
+   */
+  422: {
+    success: false;
+    code: number;
+    message: string;
+    data: Record<string, unknown>;
+    errors: Record<string, string[]>;
+    request_id: string;
+  };
+  /**
+   * Too Many Requests
+   */
+  429: {
+    success: false;
+    code: number;
+    message: string;
+    data: Record<string, unknown>;
+    errors: Record<string, unknown>;
+    request_id: string;
+  };
+  /**
+   * Internal Server Error
+   */
+  500: {
+    success: false;
+    code: number;
+    message: string;
+    data: Record<string, unknown>;
+    errors: Record<string, unknown>;
+    request_id: string;
+  };
+  /**
+   * Bad Gateway
+   */
+  502: {
+    success: false;
+    code: number;
+    message: string;
+    data: Record<string, unknown>;
+    errors: Record<string, unknown>;
+    request_id: string;
+    error_code: 'ai_provider_rejected' | 'ai_provider_invalid_response';
+  };
+  /**
+   * Service Unavailable
+   */
+  503: {
+    success: false;
+    code: number;
+    message: string;
+    data: Record<string, unknown>;
+    errors: Record<string, unknown>;
+    request_id: string;
+    error_code:
+      | 'ai_provider_unconfigured'
+      | 'ai_provider_unavailable'
+      | 'ai_provider_rate_limited';
+  };
+  /**
+   * Gateway Timeout
+   */
+  504: {
+    success: false;
+    code: number;
+    message: string;
+    data: Record<string, unknown>;
+    errors: Record<string, unknown>;
+    request_id: string;
+    error_code: 'ai_provider_timeout';
+  };
+};
+
 export type PublicAiAssistantsAiAssistantChatUsingPostParams = {
   aiAssistant: string;
 };
