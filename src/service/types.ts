@@ -208,6 +208,13 @@ export type MemberResource = {
   last_login_at: string | null;
 };
 
+export enum Node_typeEnum {
+  'attraction' = 'attraction',
+  'scenic_spot' = 'scenic_spot',
+}
+
+export type INode_typeEnum = keyof typeof Node_typeEnum;
+
 export type PublicAttractionsAttractionUsingGetParams = {
   attraction: string;
 };
@@ -372,6 +379,88 @@ export type PublicScenicSpotsUsingGetResponses = {
   500: PublicScenicSpotsUsingGetResponse;
 };
 
+export type PublicTravelRoutesTravelRouteUsingGetParams = {
+  travelRoute: string;
+};
+
+export type PublicTravelRoutesTravelRouteUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    travel_route: TourismRouteResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicTravelRoutesTravelRouteUsingGetResponses = {
+  200: PublicTravelRoutesTravelRouteUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: PublicTravelRoutesTravelRouteUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicTravelRoutesTravelRouteUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicTravelRoutesTravelRouteUsingGetResponse;
+};
+
+export type PublicTravelRoutesUsingGetParams = {
+  page?: number;
+  page_size?: number;
+  keyword?: string | null;
+  is_recommended?: boolean;
+};
+
+export type PublicTravelRoutesUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: TourismRouteResource[];
+  meta: {
+    /** Pagination strategy */
+    pagination: string;
+    /** Current page number */
+    page: number;
+    /** Items per page */
+    page_size: number;
+    /** Whether more pages exist */
+    has_more: boolean;
+    /** Total number of items */
+    total: number;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicTravelRoutesUsingGetResponses = {
+  /**
+   * Paginated list
+   */
+  200: PublicTravelRoutesUsingGetResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicTravelRoutesUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicTravelRoutesUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicTravelRoutesUsingGetResponse;
+};
+
 export type TourismAreaResource = {
   code: string;
   name: string;
@@ -406,4 +495,26 @@ export type TourismDestinationResource = {
   } | null;
   phone: string | null;
   opening_hours: string | null;
+};
+
+export type TourismRouteNodeResource = {
+  node_type: 'attraction' | 'scenic_spot';
+  position: number;
+  stay_minutes: number | null;
+  note: string | null;
+  target: TourismAreaResource | TourismDestinationResource;
+};
+
+export type TourismRouteResource = {
+  code: string;
+  name: string;
+  summary: string | null;
+  description: string | null;
+  cover: {
+    url: string | null;
+    width: number | null;
+    height: number | null;
+  } | null;
+  duration_minutes: number | null;
+  nodes?: TourismRouteNodeResource[];
 };

@@ -10,7 +10,9 @@ type _LocationUrl =
   "/pages/auth/login" |
   "/pages/me/me" |
   "/pages/scenic-spots/detail" |
-  "/pages/scenic-spots/index";
+  "/pages/scenic-spots/index" |
+  "/pages/travel-routes/detail" |
+  "/pages/travel-routes/index";
 
 interface NavigateToOptions {
   url: _LocationUrl;

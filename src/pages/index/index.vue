@@ -9,6 +9,10 @@ function openAttractions() {
 function openScenicSpots() {
   uni.navigateTo({ url: '/pages/scenic-spots/index' })
 }
+
+function openTravelRoutes() {
+  uni.navigateTo({ url: '/pages/travel-routes/index' })
+}
 </script>
 
 <template>
@@ -49,6 +53,19 @@ function openScenicSpots() {
         </view>
         <view class="feature-description">
           发现景区内外值得停留的具体景点
+        </view>
+      </view>
+      <wd-icon name="arrow-right" size="20" color="#69716c" />
+    </view>
+    <view class="feature-row" role="button" @click="openTravelRoutes">
+      <view class="feature-icon route-icon">
+        <wd-icon name="road" size="24" />
+      </view>
+      <view class="feature-copy">
+        <view class="feature-title">
+          线路
+        </view><view class="feature-description">
+          查看已发布行程和有序游览节点
         </view>
       </view>
       <wd-icon name="arrow-right" size="20" color="#69716c" />
@@ -122,6 +139,9 @@ function openScenicSpots() {
 }
 .feature-icon.secondary {
   background: #365f75;
+}
+.feature-icon.route-icon {
+  background: #7b5934;
 }
 
 .feature-copy {
