@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
+import PublicContentBody from '@/components/PublicContentBody.vue'
 import AccommodationDetail from './detail.vue'
 
 const { getAccommodation } = vi.hoisted(() => ({ getAccommodation: vi.fn() }))
@@ -8,7 +9,7 @@ vi.mock('@/api/accommodations', () => ({ getAccommodation }))
 const WdButton = defineComponent({ emits: ['click'], template: '<button @click="$emit(\'click\')"><slot /></button>' })
 
 function mountPage() {
-  return mount(AccommodationDetail, { global: { stubs: { WdButton, WdLoading: true, WdEmpty: { props: ['tip'], template: '<div>{{ tip }}<slot name="bottom" /></div>' }, WdImg: true, WdIcon: true, WdTag: { template: '<span><slot /></span>' }, WdSwiper: true } } })
+  return mount(AccommodationDetail, { global: { stubs: { WdButton, WdLoading: true, WdEmpty: { props: ['tip'], template: '<div>{{ tip }}<slot name="bottom" /></div>' }, WdImg: true, WdIcon: true, WdTag: { template: '<span><slot /></span>' }, WdSwiper: true, RichText: true } } })
 }
 
 describe('accommodation detail page', () => {
@@ -17,6 +18,7 @@ describe('accommodation detail page', () => {
     const wrapper = mountPage()
     vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ code: 'lake-hotel' })
     await flushPromises()
+    expect(wrapper.getComponent(PublicContentBody).props('content')).toBe('本地住宿')
     expect(wrapper.text()).toContain('无线网络')
     expect(wrapper.text()).toContain('入住 14:00 · 退房 12:00')
     await wrapper.findAll('.action')[0].trigger('click')

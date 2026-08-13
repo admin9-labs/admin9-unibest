@@ -3,6 +3,7 @@ import type { Attraction } from '@/api/attractions'
 import type { HttpError } from '@/http/types'
 import { ref } from 'vue'
 import { getAttraction } from '@/api/attractions'
+import PublicContentBody from '@/components/PublicContentBody.vue'
 
 defineOptions({ name: 'AttractionDetail' })
 definePage({ style: { navigationBarTitleText: '景区详情' } })
@@ -102,14 +103,7 @@ onLoad((query) => {
             <wd-icon name="phone" size="18" /><text>{{ attraction.phone }}</text>
           </view>
         </view>
-        <view v-if="attraction.description" class="section">
-          <view class="section-title">
-            景区介绍
-          </view>
-          <view class="long-text">
-            {{ attraction.description }}
-          </view>
-        </view>
+        <PublicContentBody title="景区介绍" :content="attraction.description" />
         <view v-if="attraction.scenic_spots?.length" class="section">
           <view class="section-title">
             景区内景点
@@ -200,14 +194,6 @@ onLoad((query) => {
   color: #25302a;
   font-size: 31rpx;
   font-weight: 650;
-}
-.long-text {
-  margin-top: 18rpx;
-  color: #434d48;
-  font-size: 28rpx;
-  line-height: 1.85;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 .related-list {
   margin-top: 18rpx;

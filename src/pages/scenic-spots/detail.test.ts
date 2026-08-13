@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
+import PublicContentBody from '@/components/PublicContentBody.vue'
 import ScenicSpotDetail from './detail.vue'
 
 const { getScenicSpot } = vi.hoisted(() => ({ getScenicSpot: vi.fn() }))
@@ -17,6 +18,7 @@ function mountPage() {
         WdEmpty: { props: ['tip'], template: '<div>{{ tip }}<slot name="bottom" /></div>' },
         WdImg: true,
         WdIcon: true,
+        RichText: true,
       },
     },
   })
@@ -31,6 +33,7 @@ describe('scenic spot detail page', () => {
     await flushPromises()
 
     expect(getScenicSpot).toHaveBeenCalledWith('jianchang')
+    expect(wrapper.getComponent(PublicContentBody).props('content')).toBe('历史文化街区')
     expect(wrapper.text()).toContain('建昌古城')
     await wrapper.get('.action').trigger('click')
     expect(uni.makePhoneCall).toHaveBeenCalledWith({ phoneNumber: '0834-1234567' })

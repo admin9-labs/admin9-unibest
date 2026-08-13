@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
+import PublicContentBody from '@/components/PublicContentBody.vue'
 import RestaurantDetail from './detail.vue'
 
 const { getRestaurant } = vi.hoisted(() => ({ getRestaurant: vi.fn() }))
@@ -8,7 +9,7 @@ vi.mock('@/api/restaurants', () => ({ getRestaurant }))
 const WdButton = defineComponent({ emits: ['click'], template: '<button @click="$emit(\'click\')"><slot /></button>' })
 
 function mountPage() {
-  return mount(RestaurantDetail, { global: { stubs: { WdButton, WdLoading: true, WdEmpty: { props: ['tip'], template: '<div>{{ tip }}<slot name="bottom" /></div>' }, WdImg: true, WdIcon: true, WdTag: { template: '<span><slot /></span>' }, WdSwiper: true } } })
+  return mount(RestaurantDetail, { global: { stubs: { WdButton, WdLoading: true, WdEmpty: { props: ['tip'], template: '<div>{{ tip }}<slot name="bottom" /></div>' }, WdImg: true, WdIcon: true, WdTag: { template: '<span><slot /></span>' }, WdSwiper: true, RichText: true } } })
 }
 
 describe('restaurant detail page', () => {
@@ -18,6 +19,7 @@ describe('restaurant detail page', () => {
     vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ code: 'xichang-bbq' })
     await flushPromises()
     expect(getRestaurant).toHaveBeenCalledWith('xichang-bbq')
+    expect(wrapper.getComponent(PublicContentBody).props('content')).toBe('围炉而坐')
     expect(wrapper.text()).toContain('小猪肉')
     await wrapper.findAll('.action')[0].trigger('click')
     expect(uni.makePhoneCall).toHaveBeenCalledWith({ phoneNumber: '0834-1234567' })

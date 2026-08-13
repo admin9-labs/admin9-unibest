@@ -3,6 +3,7 @@ import type { Accommodation } from '@/api/accommodations'
 import type { HttpError } from '@/http/types'
 import { computed, ref } from 'vue'
 import { getAccommodation } from '@/api/accommodations'
+import PublicContentBody from '@/components/PublicContentBody.vue'
 
 defineOptions({ name: 'AccommodationDetail' })
 definePage({ style: { navigationBarTitleText: '住宿详情' } })
@@ -121,13 +122,7 @@ onLoad((query) => {
             </wd-tag>
           </view>
         </view>
-        <view v-if="item.description" class="section">
-          <view class="section-title">
-            住宿介绍
-          </view><view class="long-text">
-            {{ item.description }}
-          </view>
-        </view>
+        <PublicContentBody title="住宿介绍" :content="item.description" />
         <view v-if="gallery.length" class="section">
           <view class="section-title">
             住宿相册
@@ -238,14 +233,6 @@ onLoad((query) => {
   color: #25302a;
   font-size: 31rpx;
   font-weight: 650;
-}
-.long-text {
-  margin-top: 18rpx;
-  color: #434d48;
-  font-size: 28rpx;
-  line-height: 1.85;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 .tag-list {
   display: flex;

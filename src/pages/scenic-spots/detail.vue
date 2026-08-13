@@ -3,6 +3,7 @@ import type { ScenicSpot } from '@/api/scenic-spots'
 import type { HttpError } from '@/http/types'
 import { ref } from 'vue'
 import { getScenicSpot } from '@/api/scenic-spots'
+import PublicContentBody from '@/components/PublicContentBody.vue'
 
 defineOptions({ name: 'ScenicSpotDetail' })
 definePage({ style: { navigationBarTitleText: '景点详情' } })
@@ -95,14 +96,7 @@ onLoad((query) => {
             <wd-icon name="phone" size="18" /><text>{{ scenicSpot.phone }}</text>
           </view>
         </view>
-        <view v-if="scenicSpot.description" class="section">
-          <view class="section-title">
-            景点介绍
-          </view>
-          <view class="description">
-            {{ scenicSpot.description }}
-          </view>
-        </view>
+        <PublicContentBody title="景点介绍" :content="scenicSpot.description" />
       </view>
     </template>
   </view>
@@ -176,13 +170,5 @@ onLoad((query) => {
   color: #25302a;
   font-size: 31rpx;
   font-weight: 650;
-}
-.description {
-  margin-top: 18rpx;
-  color: #434d48;
-  font-size: 28rpx;
-  line-height: 1.85;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 </style>

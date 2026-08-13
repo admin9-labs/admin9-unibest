@@ -3,6 +3,7 @@ import type { TravelRoute } from '@/api/travel-routes'
 import type { HttpError } from '@/http/types'
 import { ref } from 'vue'
 import { getTravelRoute } from '@/api/travel-routes'
+import PublicContentBody from '@/components/PublicContentBody.vue'
 
 defineOptions({ name: 'TravelRouteDetail' })
 definePage({ style: { navigationBarTitleText: '线路详情' } })
@@ -86,13 +87,7 @@ onLoad((query) => {
         <view v-if="route.duration_minutes" class="duration">
           <wd-icon name="time" size="18" /><text>建议用时 {{ route.duration_minutes }} 分钟</text>
         </view>
-        <view v-if="route.description" class="section">
-          <view class="section-title">
-            线路说明
-          </view><view class="long-text">
-            {{ route.description }}
-          </view>
-        </view>
+        <PublicContentBody title="线路说明" :content="route.description" />
         <view v-if="route.nodes?.length" class="section">
           <view class="section-title">
             行程节点
@@ -176,14 +171,6 @@ onLoad((query) => {
   color: #25302a;
   font-size: 31rpx;
   font-weight: 650;
-}
-.long-text {
-  margin-top: 18rpx;
-  color: #434d48;
-  font-size: 28rpx;
-  line-height: 1.85;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 .timeline {
   margin-top: 18rpx;

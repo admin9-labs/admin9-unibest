@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
+import PublicContentBody from '@/components/PublicContentBody.vue'
 import AttractionDetail from './detail.vue'
 
 const { getAttraction } = vi.hoisted(() => ({ getAttraction: vi.fn() }))
@@ -10,7 +11,7 @@ const WdButton = defineComponent({ emits: ['click'], template: '<button @click="
 
 function mountPage() {
   return mount(AttractionDetail, {
-    global: { stubs: { WdButton, WdLoading: true, WdEmpty: { props: ['tip'], template: '<div>{{ tip }}<slot name="bottom" /></div>' }, WdImg: true, WdIcon: true } },
+    global: { stubs: { WdButton, WdLoading: true, WdEmpty: { props: ['tip'], template: '<div>{{ tip }}<slot name="bottom" /></div>' }, WdImg: true, WdIcon: true, RichText: true } },
   })
 }
 
@@ -22,6 +23,7 @@ describe('attraction detail page', () => {
     await flushPromises()
 
     expect(getAttraction).toHaveBeenCalledWith('qionghai')
+    expect(wrapper.getComponent(PublicContentBody).props('content')).toBe('国家级旅游景区')
     expect(wrapper.text()).toContain('景区内景点')
     await wrapper.get('.related').trigger('click')
     expect(uni.navigateTo).toHaveBeenCalledWith({ url: '/pages/scenic-spots/detail?code=wetland' })

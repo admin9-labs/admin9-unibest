@@ -3,6 +3,7 @@ import type { ServiceInformation } from '@/api/service-information'
 import type { HttpError } from '@/http/types'
 import { computed, ref } from 'vue'
 import { getServiceInformationDetail } from '@/api/service-information'
+import PublicContentBody from '@/components/PublicContentBody.vue'
 import { openExternalLink } from '@/utils/external-link'
 
 defineOptions({ name: 'ServiceInformationDetail' })
@@ -111,13 +112,7 @@ onLoad((query) => {
             <wd-icon name="navigation" size="18" /><text>打开地图导航</text>
           </view>
         </view>
-        <view v-if="item.content" class="section">
-          <view class="section-title">
-            服务说明
-          </view><view class="long-text">
-            {{ item.content }}
-          </view>
-        </view>
+        <PublicContentBody title="服务说明" :content="item.content" />
         <view v-if="item.attachments.length" class="section">
           <view class="section-title">
             相关资料
@@ -208,14 +203,6 @@ onLoad((query) => {
   color: #25302a;
   font-size: 31rpx;
   font-weight: 650;
-}
-.long-text {
-  margin-top: 18rpx;
-  color: #434d48;
-  font-size: 28rpx;
-  line-height: 1.85;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
 }
 .attachment-list {
   margin-top: 18rpx;

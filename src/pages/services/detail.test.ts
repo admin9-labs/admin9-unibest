@@ -1,6 +1,7 @@
 import { flushPromises, mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
+import PublicContentBody from '@/components/PublicContentBody.vue'
 import ServiceDetail from './detail.vue'
 
 const mocks = vi.hoisted(() => ({ getServiceInformationDetail: vi.fn(), openExternalLink: vi.fn() }))
@@ -8,17 +9,16 @@ vi.mock('@/api/service-information', () => ({ getServiceInformationDetail: mocks
 vi.mock('@/utils/external-link', () => ({ openExternalLink: mocks.openExternalLink }))
 const WdButton = defineComponent({ emits: ['click'], template: '<button @click="$emit(\'click\', $event)"><slot /></button>' })
 function mountPage() {
-  return mount(ServiceDetail, { global: { stubs: { WdButton, WdLoading: true, WdEmpty: { props: ['tip'], template: '<div>{{ tip }}<slot name="bottom" /></div>' }, WdImg: true, WdIcon: true, WdTag: { template: '<span><slot /></span>' } } } })
+  return mount(ServiceDetail, { global: { stubs: { WdButton, WdLoading: true, WdEmpty: { props: ['tip'], template: '<div>{{ tip }}<slot name="bottom" /></div>' }, WdImg: true, WdIcon: true, WdTag: { template: '<span><slot /></span>' }, RichText: true } } })
 }
 
 describe('service information detail page', () => {
-  it('shows plain text details and connects phone, location and safe attachments', async () => {
-    mocks.getServiceInformationDetail.mockResolvedValueOnce({ code: 'visitor-center', title: '邛海游客服务', type: { code: 'visitor-center', name: '游客中心' }, provider: '旅享西昌', service_area: '邛海', summary: '便民协助', content: '<script>alert(1)</script>', address: '海滨路', latitude: 27.86, longitude: 102.27, phone: '0834-000101', service_hours: '09:00-17:30', cover: null, attachments: [{ name: '服务指南', url: 'https://example.com/guide' }] })
+  it('shows rich service details and connects phone, location and safe attachments', async () => {
+    mocks.getServiceInformationDetail.mockResolvedValueOnce({ code: 'visitor-center', title: '邛海游客服务', type: { code: 'visitor-center', name: '游客中心' }, provider: '旅享西昌', service_area: '邛海', summary: '便民协助', content: '<h2>服务流程</h2><p>现场咨询</p>', address: '海滨路', latitude: 27.86, longitude: 102.27, phone: '0834-000101', service_hours: '09:00-17:30', cover: null, attachments: [{ name: '服务指南', url: 'https://example.com/guide' }] })
     const wrapper = mountPage()
     vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ code: 'visitor-center' })
     await flushPromises()
-    expect(wrapper.text()).toContain('<script>alert(1)</script>')
-    expect(wrapper.find('script').exists()).toBe(false)
+    expect(wrapper.getComponent(PublicContentBody).props('content')).toBe('<h2>服务流程</h2><p>现场咨询</p>')
     await wrapper.find('.fact.action').trigger('click')
     expect(uni.makePhoneCall).toHaveBeenCalledWith({ phoneNumber: '0834-000101' })
     await wrapper.findAll('.fact.action')[1].trigger('click')
