@@ -4,8 +4,7 @@ Admin9 的会员端脚手架，基于 Vue 3、TypeScript、uni-app 和 Wot UI v2
 
 ## 环境
 
-- Node.js `22.23.1`，见 `.node-version`
-- pnpm `10.10.0`
+- Node.js 22、pnpm 10，具体约束以 `package.json` 为准
 - Laravel API 仓库默认位于同级目录 `../xichang-travel-api`
 
 使用冻结锁文件安装依赖：
