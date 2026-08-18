@@ -6,7 +6,7 @@ This Vue 3, TypeScript, and uni-app application targets H5 and WeChat Mini Progr
 
 ## Build, Test, and Development Commands
 
-Use the Node.js and pnpm versions declared in `package.json`.
+Use a Node.js version satisfying `engines.node` and the pnpm version declared by `packageManager` in `package.json`.
 
 - `pnpm install` installs dependencies and initializes generated base files.
 - `pnpm dev:h5` starts H5 development at `http://localhost:9000/`.

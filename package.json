@@ -29,8 +29,8 @@
     "url": "https://github.com/admin9-labs/admin9-unibest/issues"
   },
   "engines": {
-    "node": ">=22 <23",
-    "pnpm": "10.10.0"
+    "node": ">=20",
+    "pnpm": ">=9"
   },
   "scripts": {
     "openapi": "openapi-ts",
@@ -185,7 +185,7 @@
     "miniprogram-ci": "^2.1.26",
     "openapi-ts-request": "1.12.3",
     "picocolors": "^1.1.1",
-    "postcss": "8.5.18",
+    "postcss": "8.5.23",
     "postcss-html": "^1.8.0",
     "postcss-scss": "^4.0.9",
     "rollup-plugin-visualizer": "^6.0.3",
