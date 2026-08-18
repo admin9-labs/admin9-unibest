@@ -14,7 +14,15 @@ describe('complaint API adapter', () => {
 
   it('keeps upload and guest credentials in public request bodies', async () => {
     const file = new File(['evidence'], 'evidence.jpg', { type: 'image/jpeg' })
-    const input = { category_code: 'service-quality', contact_name: '游客', contact_mobile: '13800138000', target_name: '邛海景区', title: '服务投诉', content: '投诉内容' }
+    const input = {
+      category_id: 21,
+      contact_name: '游客',
+      contact_mobile: '13800138000',
+      target_name: '邛海景区',
+      title: '服务投诉',
+      content: '投诉内容',
+      evidence: [{ file_id: 42, upload_token: 'a'.repeat(64) }],
+    }
     mocks.upload.mockResolvedValue({ data: {} })
     mocks.guestCreate.mockResolvedValue({ data: {} })
     mocks.guestQuery.mockResolvedValue({ data: {} })

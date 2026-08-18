@@ -46,17 +46,21 @@ export function loadTencentMap(key: string, documentRef: Document = document): P
 
   loadingPromise = new Promise<TencentMapApi>((resolve, reject) => {
     const existingScript = documentRef.querySelector<HTMLScriptElement>('#xichang-tencent-map-sdk')
+    const rejectLoad = (message: string, script?: HTMLScriptElement | null) => {
+      script?.remove()
+      reject(new Error(message))
+    }
     const finish = () => {
       if (window.TMap)
         resolve(window.TMap)
       else
-        reject(new Error('Tencent map SDK did not initialize'))
+        rejectLoad('Tencent map SDK did not initialize', documentRef.querySelector<HTMLScriptElement>('#xichang-tencent-map-sdk'))
     }
 
     window.__xichangTencentMapReady = finish
     if (existingScript) {
       existingScript.addEventListener('load', finish, { once: true })
-      existingScript.addEventListener('error', () => reject(new Error('Tencent map SDK failed to load')), { once: true })
+      existingScript.addEventListener('error', () => rejectLoad('Tencent map SDK failed to load', existingScript), { once: true })
       return
     }
 
@@ -64,7 +68,7 @@ export function loadTencentMap(key: string, documentRef: Document = document): P
     script.id = 'xichang-tencent-map-sdk'
     script.async = true
     script.src = `https://map.qq.com/api/gljs?v=1.exp&key=${encodeURIComponent(key)}&callback=__xichangTencentMapReady`
-    script.addEventListener('error', () => reject(new Error('Tencent map SDK failed to load')), { once: true })
+    script.addEventListener('error', () => rejectLoad('Tencent map SDK failed to load', script), { once: true })
     documentRef.head.appendChild(script)
   }).catch((error) => {
     loadingPromise = null

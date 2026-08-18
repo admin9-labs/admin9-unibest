@@ -4,18 +4,21 @@ import type { HttpError } from '@/http/types'
 import { ref } from 'vue'
 import { getTravelRoute } from '@/api/travel-routes'
 import PublicContentBody from '@/components/PublicContentBody.vue'
+import PublicDetailCover from '@/components/PublicDetailCover.vue'
+import PublicDetailHeading from '@/components/PublicDetailHeading.vue'
+import PublicState from '@/components/PublicState.vue'
 
 defineOptions({ name: 'TravelRouteDetail' })
 definePage({ style: { navigationBarTitleText: '线路详情' } })
 
-const code = ref('')
+const id = ref<number | null>(null)
 const route = ref<TravelRoute | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
 const failed = ref(false)
 
 async function load() {
-  if (!code.value) {
+  if (id.value === null) {
     loading.value = false
     notFound.value = true
     return
@@ -24,7 +27,7 @@ async function load() {
   failed.value = false
   notFound.value = false
   try {
-    route.value = await getTravelRoute(code.value)
+    route.value = await getTravelRoute(id.value)
   }
   catch (error) {
     notFound.value = (error as HttpError).statusCode === 404
@@ -38,79 +41,70 @@ async function load() {
 function returnToList() {
   uni.redirectTo({ url: '/pages/travel-routes/index' })
 }
+
+function durationLabel(minutes: number | null) {
+  if (!minutes)
+    return ''
+  const hours = Math.floor(minutes / 60)
+  const rest = minutes % 60
+  return `${hours ? `${hours}小时` : ''}${rest ? `${rest}分钟` : ''}`
+}
+
 function openNode(node: NonNullable<TravelRoute['nodes']>[number]) {
   const path = node.node_type === 'attraction' ? 'attractions' : 'scenic-spots'
-  uni.navigateTo({ url: `/pages/${path}/detail?code=${encodeURIComponent(node.target.code)}` })
+  uni.navigateTo({ url: `/pages/${path}/detail?id=${node.target.id}` })
 }
 
 onLoad((query) => {
-  code.value = typeof query?.code === 'string' ? decodeURIComponent(query.code) : ''
+  const value = Number(query?.id)
+  id.value = Number.isInteger(value) && value > 0 ? value : null
   load()
 })
 </script>
 
 <template>
   <view class="page">
-    <view v-if="loading" class="state">
-      <wd-loading text="正在加载线路详情" />
+    <view v-if="loading" class="state-shell">
+      <PublicState kind="loading" title="正在加载线路详情" />
     </view>
-    <view v-else-if="notFound" class="state">
-      <wd-empty tip="该线路不存在或已停止展示">
-        <template #bottom>
-          <wd-button size="small" @click="returnToList">
-            返回线路列表
-          </wd-button>
-        </template>
-      </wd-empty>
+    <view v-else-if="notFound" class="state-shell">
+      <PublicState kind="not-found" title="该线路不存在或已停止展示" action-text="返回线路列表" @action="returnToList" />
     </view>
-    <view v-else-if="failed" class="state">
-      <wd-empty icon="network" tip="线路详情暂时无法加载">
-        <template #bottom>
-          <wd-button size="small" @click="load">
-            重新加载
-          </wd-button>
-        </template>
-      </wd-empty>
+    <view v-else-if="failed" class="state-shell">
+      <PublicState kind="network-error" title="线路详情暂时无法加载" description="请检查网络后重新尝试。" action-text="重新加载" @action="load" />
     </view>
     <template v-else-if="route">
-      <wd-img v-if="route.cover?.url" :src="route.cover.url" width="100%" height="420rpx" mode="aspectFill" radius="0" enable-preview />
-      <view v-else class="hero-placeholder">
-        <wd-icon name="road" size="40" /><text>旅享西昌</text>
-      </view>
-      <view class="content">
-        <view class="title">
-          {{ route.name }}
-        </view>
-        <view v-if="route.summary" class="summary">
-          {{ route.summary }}
-        </view>
-        <view v-if="route.duration_minutes" class="duration">
-          <wd-icon name="time" size="18" /><text>建议用时 {{ route.duration_minutes }} 分钟</text>
-        </view>
-        <PublicContentBody title="线路说明" :content="route.description" />
-        <view v-if="route.nodes?.length" class="section">
-          <view class="section-title">
-            行程节点
+      <view class="detail-shell">
+        <PublicDetailCover :src="route.cover?.url" height="420rpx" />
+        <view class="content">
+          <PublicDetailHeading :title="route.name" :summary="route.summary" />
+          <view v-if="route.duration_minutes" class="duration">
+            <text class="duration-label">建议用时</text><text class="duration-value">{{ durationLabel(route.duration_minutes) }}</text>
           </view>
-          <view class="timeline">
-            <view v-for="node in route.nodes" :key="`${node.position}-${node.target.code}`" class="node" role="link" @click="openNode(node)">
-              <view class="position">
-                {{ node.position }}
-              </view>
-              <view class="node-copy">
-                <view class="node-name">
-                  {{ node.target.name }}
-                </view><view class="node-kind">
-                  {{ node.node_type === 'attraction' ? '景区' : '景点' }}<template v-if="node.stay_minutes">
-                    · 建议停留 {{ node.stay_minutes }} 分钟
-                  </template>
-                </view><view v-if="node.note" class="node-note">
-                  {{ node.note }}
+          <view v-if="route.nodes?.length" class="section">
+            <view class="section-title">
+              行程安排
+            </view>
+            <view class="timeline">
+              <view v-for="node in route.nodes" :key="`${node.position}-${node.target.id}`" class="node" role="link" @click="openNode(node)">
+                <view class="position">
+                  {{ node.position }}
+                </view>
+                <view class="node-copy">
+                  <view class="node-name">
+                    {{ node.target.name }}
+                  </view><view class="node-kind">
+                    {{ node.node_type === 'attraction' ? '景区' : '景点' }}<template v-if="node.stay_minutes">
+                      · 建议停留 {{ node.stay_minutes }} 分钟
+                    </template>
+                  </view><view v-if="node.note" class="node-note">
+                    {{ node.note }}
+                  </view>
                 </view>
               </view>
-              <wd-icon name="arrow-right" size="18" color="#69716c" />
             </view>
           </view>
+          <PublicContentBody title="线路说明" :content="route.description" />
         </view>
       </view>
     </template>
@@ -120,75 +114,74 @@ onLoad((query) => {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6f3;
+  background: var(--lx-color-surface-muted);
 }
-.state {
-  display: flex;
+.state-shell {
+  max-width: var(--lx-page-max);
   min-height: 78vh;
-  align-items: center;
-  justify-content: center;
-  padding: 28rpx;
+  margin: 0 auto;
+  padding: 28rpx 28rpx calc(28rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
 }
-.hero-placeholder {
-  display: flex;
-  height: 420rpx;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14rpx;
-  color: #496270;
-  background: #e3eaed;
-  font-size: 24rpx;
+.detail-shell {
+  width: 100%;
+  max-width: var(--lx-page-max);
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--lx-color-surface);
 }
 .content {
-  padding: 36rpx 28rpx 72rpx;
-}
-.title {
-  color: #17211c;
-  font-size: 46rpx;
-  font-weight: 700;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-}
-.summary {
-  margin-top: 18rpx;
-  color: #515b56;
-  font-size: 28rpx;
-  line-height: 1.7;
+  padding: 36rpx var(--lx-space-page) calc(72rpx + env(safe-area-inset-bottom));
 }
 .duration {
   display: flex;
-  align-items: center;
-  gap: 12rpx;
-  margin-top: 26rpx;
-  color: #365f75;
-  font-size: 26rpx;
+  align-items: baseline;
+  gap: 14rpx;
+  margin-top: 24rpx;
+  padding: 18rpx 0;
+  border-bottom: 1px solid var(--lx-color-border);
+}
+.duration-label {
+  color: var(--lx-color-text-tertiary);
+  font-size: 23rpx;
+}
+.duration-value {
+  color: var(--lx-color-primary-strong);
+  font-size: 32rpx;
+  font-weight: 680;
 }
 .section {
   margin-top: 40rpx;
 }
 .section-title {
-  color: #25302a;
+  color: var(--lx-color-text-main);
   font-size: 31rpx;
   font-weight: 650;
 }
 .timeline {
+  position: relative;
   margin-top: 18rpx;
-  overflow: hidden;
-  background: #fff;
-  border: 1px solid #dfe5e0;
-  border-radius: 8px;
 }
 .node {
+  position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 18rpx;
   min-height: 126rpx;
-  padding: 24rpx;
+  padding: 18rpx 0 28rpx;
   box-sizing: border-box;
 }
 .node + .node {
-  border-top: 1px solid #edf0ed;
+  border-top: 0;
+}
+.node:not(:last-child)::after {
+  position: absolute;
+  top: 66rpx;
+  bottom: -4rpx;
+  left: 23rpx;
+  width: 2rpx;
+  background: var(--lx-color-border-strong);
+  content: '';
 }
 .position {
   display: flex;
@@ -197,7 +190,7 @@ onLoad((query) => {
   align-items: center;
   justify-content: center;
   color: #fff;
-  background: #23744f;
+  background: var(--lx-color-secondary);
   border-radius: 50%;
   font-size: 23rpx;
 }
@@ -206,19 +199,21 @@ onLoad((query) => {
   min-width: 0;
 }
 .node-name {
-  color: #25302a;
+  color: var(--lx-color-text-main);
   font-size: 28rpx;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 .node-kind {
   margin-top: 7rpx;
-  color: #365f75;
+  color: var(--lx-color-text-tertiary);
   font-size: 23rpx;
 }
 .node-note {
   margin-top: 10rpx;
-  color: #69716c;
+  color: var(--lx-color-text-tertiary);
   font-size: 24rpx;
   line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 </style>

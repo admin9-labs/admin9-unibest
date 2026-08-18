@@ -38,14 +38,14 @@ const hasContent = computed(() => {
 .public-content-body {
   min-width: 0;
   margin-top: 40rpx;
-  color: #434d48;
+  color: var(--lx-color-text-secondary);
   font-size: 28rpx;
   line-height: 1.85;
   overflow-wrap: anywhere;
   word-break: break-word;
 }
 .public-content-body__title {
-  color: #25302a;
+  color: var(--lx-color-text-main);
   font-size: 31rpx;
   font-weight: 650;
   line-height: normal;
@@ -71,7 +71,7 @@ const hasContent = computed(() => {
 .public-content-body__rich :deep(h3),
 .public-content-body__rich :deep(h4) {
   margin: 34rpx 0 16rpx;
-  color: #25302a;
+  color: var(--lx-color-text-main);
   font-weight: 650;
   line-height: 1.5;
 }
@@ -100,9 +100,9 @@ const hasContent = computed(() => {
 .public-content-body__rich :deep(blockquote) {
   margin: 24rpx 0;
   padding: 18rpx 22rpx;
-  border-left: 6rpx solid #80aa96;
-  color: #59635e;
-  background: #edf3ef;
+  border-left: 6rpx solid var(--lx-color-secondary);
+  color: var(--lx-color-text-secondary);
+  background: #eaf3f1;
 }
 .public-content-body__rich :deep(img) {
   display: block;
@@ -112,7 +112,7 @@ const hasContent = computed(() => {
   border-radius: 8px;
 }
 .public-content-body__rich :deep(a) {
-  color: #23744f;
+  color: var(--lx-color-primary-strong);
   text-decoration: underline;
   overflow-wrap: anywhere;
   word-break: break-all;

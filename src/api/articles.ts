@@ -3,12 +3,12 @@ import { publicArticlesArticleUsingGet, publicArticlesUsingGet } from '@/service
 
 export type Article = PublishedContentResource
 
-export async function getArticles(keyword = '', categoryCode = '') {
-  const response = await publicArticlesUsingGet({ params: { keyword: keyword || undefined, category_code: categoryCode || undefined, page_size: 50 }, options: { auth: 'public', hideErrorToast: true } })
+export async function getArticles(keyword = '', categoryId?: number) {
+  const response = await publicArticlesUsingGet({ params: { keyword: keyword || undefined, category_id: categoryId, page_size: 50 }, options: { auth: 'public', hideErrorToast: true } })
   return response.data as Article[]
 }
 
-export async function getArticle(code: string) {
-  const response = await publicArticlesArticleUsingGet({ params: { article: code }, options: { auth: 'public', hideErrorToast: true } })
+export async function getArticle(id: number) {
+  const response = await publicArticlesArticleUsingGet({ params: { article: id }, options: { auth: 'public', hideErrorToast: true } })
   return response.data.article as Article
 }

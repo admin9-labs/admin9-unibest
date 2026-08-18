@@ -7,7 +7,7 @@ export type MapPointType = 'attraction' | 'scenic-spot' | 'restaurant' | 'accomm
 
 export interface MapPoint {
   id: string
-  code: string
+  contentId: number
   type: MapPointType
   typeName: string
   name: string
@@ -18,7 +18,7 @@ export interface MapPoint {
 }
 
 interface LocatedContent {
-  code: string
+  id: number
   name: string
   address?: string | null
   latitude?: number | null
@@ -61,15 +61,15 @@ export async function getMapPoints(): Promise<MapPoint[]> {
 
     const definition = pointTypes[index]
     return result.value.filter(hasValidCoordinates).map(item => ({
-      id: `${definition.type}:${item.code}`,
-      code: item.code,
+      id: `${definition.type}:${item.id}`,
+      contentId: item.id,
       type: definition.type,
       typeName: definition.typeName,
       name: item.name,
       address: item.address ?? null,
       latitude: item.latitude,
       longitude: item.longitude,
-      detailUrl: `/pages/${definition.detailPath}/detail?code=${encodeURIComponent(item.code)}`,
+      detailUrl: `/pages/${definition.detailPath}/detail?id=${item.id}`,
     }))
   })
 }

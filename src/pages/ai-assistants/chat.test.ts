@@ -12,16 +12,16 @@ vi.mock('@/api/ai-assistants', () => ({
 
 describe('ai assistant chat page', () => {
   it('streams a real assistant answer and submits feedback with only its reference', async () => {
-    api.detail.mockResolvedValueOnce({ code: 'xichang', name: '西昌文旅助手', description: null, welcome_message: '您好' })
-    api.categories.mockResolvedValueOnce([{ code: 'accuracy', name: '信息准确性' }])
-    api.stream.mockImplementationOnce(async (_code: string, _question: string, options: { onDelta: (content: string) => void }) => {
+    api.detail.mockResolvedValueOnce({ id: 901, name: '西昌文旅助手', description: null, welcome_message: '您好' })
+    api.categories.mockResolvedValueOnce([{ id: 91, name: '信息准确性' }])
+    api.stream.mockImplementationOnce(async (_id: number, _question: string, options: { onDelta: (content: string) => void }) => {
       options.onDelta('建议游览')
       options.onDelta('邛海。')
-      return { assistant: { code: 'xichang', name: '西昌文旅助手' }, answer: '建议游览邛海。', message_reference: 'a'.repeat(64), message_reference_expires_at: '2026-08-14T00:00:00Z', knowledge_used_count: 2 }
+      return { assistant: { id: 901, name: '西昌文旅助手' }, answer: '建议游览邛海。', message_reference: 'a'.repeat(64), message_reference_expires_at: '2026-08-14T00:00:00Z', knowledge_used_count: 2 }
     })
-    api.feedback.mockResolvedValueOnce({ accepted: true, rating: 'helpful', category_code: 'accuracy' })
+    api.feedback.mockResolvedValueOnce({ accepted: true, rating: 'helpful', category_id: 91 })
     const wrapper = mount(AiAssistantChat, { global: { stubs: { WdLoading: true, WdEmpty: true, WdButton: true, WdTextarea: { template: '<textarea />' }, WdRadioGroup: true, WdRadio: true, WdIcon: true } } })
-    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ code: 'xichang' })
+    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ id: '901' })
     await flushPromises()
     const page = wrapper.vm as unknown as { question: string, ask: () => Promise<void>, feedback: (message: unknown, rating: 'helpful' | 'unhelpful') => Promise<void>, messages: Array<{ answerData: unknown }> }
     page.question = '邛海怎么玩？'
@@ -29,19 +29,19 @@ describe('ai assistant chat page', () => {
     await flushPromises()
     expect(wrapper.text()).toContain('建议游览邛海')
     await page.feedback(page.messages.at(-1), 'helpful')
-    expect(api.feedback).toHaveBeenCalledWith({ message_reference: 'a'.repeat(64), rating: 'helpful', category_code: 'accuracy' })
+    expect(api.feedback).toHaveBeenCalledWith({ message_reference: 'a'.repeat(64), rating: 'helpful', category_id: 91 })
     expect(wrapper.text()).toContain('反馈已提交')
   })
 
   it('stops an in-flight answer with AbortController', async () => {
-    api.detail.mockResolvedValueOnce({ code: 'xichang', name: '西昌文旅助手', description: null, welcome_message: '您好' })
+    api.detail.mockResolvedValueOnce({ id: 901, name: '西昌文旅助手', description: null, welcome_message: '您好' })
     api.categories.mockResolvedValueOnce([])
     let rejectStream!: (error: Error) => void
     api.stream.mockReturnValueOnce(new Promise((_, reject) => {
       rejectStream = reject
     }))
     const wrapper = mount(AiAssistantChat, { global: { stubs: { WdLoading: true, WdEmpty: true, WdButton: true, WdTextarea: { template: '<textarea />' }, WdRadioGroup: true, WdRadio: true, WdIcon: true } } })
-    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ code: 'xichang' })
+    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ id: '901' })
     await flushPromises()
     const page = wrapper.vm as unknown as { question: string, ask: () => Promise<void>, stop: () => void }
     page.question = '请介绍邛海'
@@ -53,11 +53,11 @@ describe('ai assistant chat page', () => {
   })
 
   it('keeps chat available when feedback categories cannot load', async () => {
-    api.detail.mockResolvedValueOnce({ code: 'xichang', name: '西昌文旅助手', description: null, welcome_message: '您好' })
+    api.detail.mockResolvedValueOnce({ id: 901, name: '西昌文旅助手', description: null, welcome_message: '您好' })
     api.categories.mockRejectedValueOnce(new Error('categories unavailable'))
     const wrapper = mount(AiAssistantChat, { global: { stubs: { WdLoading: true, WdEmpty: true, WdButton: true, WdTextarea: { template: '<textarea />' }, WdRadioGroup: true, WdRadio: true, WdIcon: true } } })
 
-    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ code: 'xichang' })
+    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ id: '901' })
     await flushPromises()
 
     expect(wrapper.text()).toContain('您好')

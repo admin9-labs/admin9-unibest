@@ -26,18 +26,18 @@ vi.mock('@/service/aiAssistant', () => ({
 describe('public AI assistant API adapter', () => {
   beforeEach(() => {
     service.list.mockResolvedValue({ data: [] })
-    service.detail.mockResolvedValue({ data: { ai_assistant: { code: 'travel', name: '旅游助手' } } })
+    service.detail.mockResolvedValue({ data: { ai_assistant: { id: 901, name: '旅游助手' } } })
     service.chat.mockResolvedValue({ data: { chat: { answer: '回答' } } })
-    service.categories.mockResolvedValue({ data: [{ code: 'accuracy', name: '准确性' }] })
+    service.categories.mockResolvedValue({ data: [{ id: 91, name: '准确性' }] })
     service.feedback.mockResolvedValue({ data: { feedback: { accepted: true } } })
   })
 
   it('uses public auth for discovery and chat', async () => {
     await getAiAssistants()
-    await getAiAssistant('travel')
-    await askAiAssistant('travel', '邛海怎么玩？')
+    await getAiAssistant(901)
+    await askAiAssistant(901, '邛海怎么玩？')
     expect(service.chat).toHaveBeenCalledWith(expect.objectContaining({
-      params: { aiAssistant: 'travel' },
+      params: { aiAssistant: 901 },
       body: { message: '邛海怎么玩？' },
       options: { auth: 'public', hideErrorToast: true },
     }))
@@ -45,15 +45,15 @@ describe('public AI assistant API adapter', () => {
 
   it('loads server categories and submits only the trusted reference', async () => {
     await getAiFeedbackCategories()
-    await submitAiFeedback({ message_reference: 'a'.repeat(64), rating: 'helpful', category_code: 'accuracy' })
+    await submitAiFeedback({ message_reference: 'a'.repeat(64), rating: 'helpful', category_id: 91 })
     expect(service.feedback).toHaveBeenCalledWith(expect.objectContaining({
-      body: { message_reference: 'a'.repeat(64), rating: 'helpful', category_code: 'accuracy' },
+      body: { message_reference: 'a'.repeat(64), rating: 'helpful', category_id: 91 },
     }))
   })
 
   it('parses split SSE frames and returns the complete trusted answer', async () => {
     const chunks = [
-      'event: start\ndata: {"assistant":{"code":"travel","name":"旅游助手"}}\n\n',
+      'event: start\ndata: {"assistant":{"id":901,"name":"旅游助手"}}\n\n',
       'event: delta\ndata: {"content":"邛海"}\n\n',
       'event: delta\ndata: {"content":"适合游览。"}\n\n',
       'event: complete\ndata: {"answer":"邛海适合游览。","message_reference":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","message_reference_expires_at":"2026-08-14T00:00:00Z","knowledge_used_count":2}\n\n',
@@ -72,17 +72,17 @@ describe('public AI assistant API adapter', () => {
       body: { getReader: () => reader },
     }))
     const deltas: string[] = []
-    await expect(streamAiAssistant('travel', '邛海怎么样？', { onDelta: content => deltas.push(content) })).resolves.toMatchObject({
+    await expect(streamAiAssistant(901, '邛海怎么样？', { onDelta: content => deltas.push(content) })).resolves.toMatchObject({
       answer: '邛海适合游览。',
       knowledge_used_count: 2,
-      assistant: { code: 'travel' },
+      assistant: { id: 901 },
     })
     expect(deltas).toEqual(['邛海', '适合游览。'])
   })
 
   it('preserves SSE event state when CRLF is split across stream reads', async () => {
     const frames = [
-      'event: start\r\ndata: {"assistant":{"code":"travel","name":"旅游助手"}}\r\n\r\n',
+      'event: start\r\ndata: {"assistant":{"id":901,"name":"旅游助手"}}\r\n\r\n',
       'event: delta\r\ndata: {"content":"邛海"}\r\n\r\n',
       `event: complete\r\ndata: {"answer":"邛海","message_reference":"${'a'.repeat(64)}","message_reference_expires_at":"2026-08-14T00:00:00Z","knowledge_used_count":1}\r\n\r\n`,
     ].join('')
@@ -102,10 +102,10 @@ describe('public AI assistant API adapter', () => {
     const events: string[] = []
     const deltas: string[] = []
 
-    await expect(streamAiAssistant('travel', '问题', {
+    await expect(streamAiAssistant(901, '问题', {
       onDelta: content => deltas.push(content),
       onEvent: event => events.push(event.event),
-    })).resolves.toMatchObject({ answer: '邛海', assistant: { code: 'travel', name: '旅游助手' } })
+    })).resolves.toMatchObject({ answer: '邛海', assistant: { id: 901, name: '旅游助手' } })
     expect(events).toEqual(['start', 'delta', 'complete'])
     expect(deltas).toEqual(['邛海'])
   })
@@ -115,7 +115,7 @@ describe('public AI assistant API adapter', () => {
     vi.stubGlobal('fetch', undefined)
     const controller = new AbortController()
     service.chat.mockReturnValue(new Promise(() => {}))
-    const stream = streamAiAssistant('travel', '问题', { signal: controller.signal })
+    const stream = streamAiAssistant(901, '问题', { signal: controller.signal })
 
     controller.abort()
 
@@ -131,16 +131,16 @@ describe('public AI assistant API adapter', () => {
       body: { getReader: () => reader },
     }))
 
-    await expect(streamAiAssistant('travel', '问题')).rejects.toThrow('网络连接已中断，请检查网络后重试')
+    await expect(streamAiAssistant(901, '问题')).rejects.toThrow('网络连接已中断，请检查网络后重试')
   })
 
   it('falls back to JSON when the stream endpoint returns JSON', async () => {
     vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
       ok: true,
       headers: new Headers({ 'content-type': 'application/json' }),
-      json: async () => ({ data: { chat: { assistant: { code: 'travel', name: '旅游助手' }, answer: '回答', message_reference: 'a'.repeat(64), message_reference_expires_at: '2026-08-14T00:00:00Z', knowledge_used_count: 0 } } }),
+      json: async () => ({ data: { chat: { assistant: { id: 901, name: '旅游助手' }, answer: '回答', message_reference: 'a'.repeat(64), message_reference_expires_at: '2026-08-14T00:00:00Z', knowledge_used_count: 0 } } }),
     }))
-    await expect(streamAiAssistant('travel', '问题')).resolves.toMatchObject({ answer: '回答' })
+    await expect(streamAiAssistant(901, '问题')).resolves.toMatchObject({ answer: '回答' })
   })
 
   it('maps pre-stream rate limits and network failures to actionable messages', async () => {
@@ -148,9 +148,9 @@ describe('public AI assistant API adapter', () => {
       ok: false,
       status: 429,
     }))
-    await expect(streamAiAssistant('travel', '问题')).rejects.toThrow('提问较频繁，请稍后再试')
+    await expect(streamAiAssistant(901, '问题')).rejects.toThrow('提问较频繁，请稍后再试')
 
     vi.stubGlobal('fetch', vi.fn().mockRejectedValueOnce(new TypeError('Failed to fetch')))
-    await expect(streamAiAssistant('travel', '问题')).rejects.toThrow('网络连接不可用，请检查网络后重试')
+    await expect(streamAiAssistant(901, '问题')).rejects.toThrow('网络连接不可用，请检查网络后重试')
   })
 })

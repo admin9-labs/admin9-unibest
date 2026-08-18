@@ -2,6 +2,7 @@
 import type { Consultation } from '@/api/consultations'
 import { ref } from 'vue'
 import { getMemberConsultations } from '@/api/consultations'
+import PublicState from '@/components/PublicState.vue'
 import {
   consultationStatus,
   formatConsultationTime,
@@ -40,28 +41,24 @@ onShow(load)
 
 <template>
   <view class="page">
-    <view class="header">
-      <view class="title">
-        我的咨询
-      </view><wd-button
-        size="small"
-        @click="create"
-      >
+    <view class="toolbar">
+      <view class="record-count">
+        {{ loading ? '' : `${items.length} 条记录` }}
+      </view>
+      <wd-button size="small" @click="create">
         新增咨询
       </wd-button>
-    </view><view v-if="loading" class="state">
-      <wd-loading text="正在加载本人记录" />
-    </view><view v-else-if="failed" class="state">
-      <wd-empty icon="network" tip="本人咨询暂时无法加载">
-        <template #bottom>
-          <wd-button size="small" @click="load">
-            重新加载
-          </wd-button>
-        </template>
-      </wd-empty>
-    </view><view v-else-if="!items.length" class="state">
-      <wd-empty tip="暂无咨询记录" />
-    </view><view v-else class="list">
+    </view>
+    <view v-if="loading" class="state">
+      <PublicState kind="loading" title="正在加载咨询记录" />
+    </view>
+    <view v-else-if="failed" class="state">
+      <PublicState kind="network-error" title="咨询记录暂时无法加载" description="请检查网络后重新尝试。" action-text="重新加载" @action="load" />
+    </view>
+    <view v-else-if="!items.length" class="state">
+      <PublicState kind="initial-empty" title="暂无咨询记录" action-text="提交咨询" @action="create" />
+    </view>
+    <view v-else class="list">
       <view
         v-for="item in items"
         :key="item.ticket_no"
@@ -92,36 +89,37 @@ onShow(load)
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  padding: 28rpx;
-  background: #f4f6f3;
+  max-width: var(--lx-page-max);
+  margin: 0 auto;
+  padding: 0 var(--lx-space-page) calc(40rpx + env(safe-area-inset-bottom));
+  background: var(--lx-color-surface-muted);
   box-sizing: border-box;
 }
-.header {
+.toolbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20rpx 4rpx 32rpx;
+  min-height: 100rpx;
+  gap: 20rpx;
+  border-bottom: 1px solid var(--lx-color-border);
 }
-.title {
-  color: #17211c;
-  font-size: 42rpx;
-  font-weight: 700;
+.record-count {
+  color: var(--lx-color-text-tertiary);
+  font-size: var(--lx-font-meta);
 }
 .state {
-  display: flex;
-  min-height: 60vh;
-  align-items: center;
-  justify-content: center;
+  min-height: 68vh;
 }
 .list {
-  display: grid;
-  gap: 20rpx;
+  background: var(--lx-color-surface);
 }
 .record {
-  padding: 26rpx;
-  background: #fff;
-  border: 1px solid #dbe4df;
-  border-radius: 8px;
+  padding: 28rpx 4rpx;
+  border-bottom: 1px solid var(--lx-color-border);
+  transition: opacity 120ms ease;
+}
+.record:active {
+  opacity: 0.58;
 }
 .record-head {
   display: flex;
@@ -131,14 +129,17 @@ onShow(load)
 }
 .subject {
   min-width: 0;
-  color: #17211c;
+  color: var(--lx-color-text-main);
   font-size: 30rpx;
   font-weight: 650;
+  line-height: 1.45;
   overflow-wrap: anywhere;
 }
 .meta {
   margin-top: 10rpx;
-  color: #69716c;
+  color: var(--lx-color-text-tertiary);
   font-size: 22rpx;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 </style>

@@ -3,19 +3,23 @@ import type { Attraction } from '@/api/attractions'
 import type { HttpError } from '@/http/types'
 import { ref } from 'vue'
 import { getAttraction } from '@/api/attractions'
+import DestinationVisitInfo from '@/components/DestinationVisitInfo.vue'
 import PublicContentBody from '@/components/PublicContentBody.vue'
+import PublicDetailCover from '@/components/PublicDetailCover.vue'
+import PublicDetailHeading from '@/components/PublicDetailHeading.vue'
+import PublicState from '@/components/PublicState.vue'
 
 defineOptions({ name: 'AttractionDetail' })
 definePage({ style: { navigationBarTitleText: '景区详情' } })
 
-const code = ref('')
+const id = ref<number | null>(null)
 const attraction = ref<Attraction | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
 const failed = ref(false)
 
 async function load() {
-  if (!code.value) {
+  if (id.value === null) {
     loading.value = false
     notFound.value = true
     return
@@ -24,7 +28,7 @@ async function load() {
   failed.value = false
   notFound.value = false
   try {
-    attraction.value = await getAttraction(code.value)
+    attraction.value = await getAttraction(id.value)
   }
   catch (error) {
     notFound.value = (error as HttpError).statusCode === 404
@@ -44,80 +48,53 @@ function callPhone() {
     uni.makePhoneCall({ phoneNumber: attraction.value.phone })
 }
 
-function openScenicSpot(spotCode: string) {
-  uni.navigateTo({ url: `/pages/scenic-spots/detail?code=${encodeURIComponent(spotCode)}` })
+function openScenicSpot(spotId: number) {
+  uni.navigateTo({ url: `/pages/scenic-spots/detail?id=${spotId}` })
 }
 
 onLoad((query) => {
-  code.value = typeof query?.code === 'string' ? decodeURIComponent(query.code) : ''
+  const value = Number(query?.id)
+  id.value = Number.isInteger(value) && value > 0 ? value : null
   load()
 })
 </script>
 
 <template>
   <view class="page">
-    <view v-if="loading" class="state">
-      <wd-loading text="正在加载景区详情" />
+    <view v-if="loading" class="state-shell">
+      <PublicState kind="loading" title="正在加载景区详情" />
     </view>
-    <view v-else-if="notFound" class="state">
-      <wd-empty tip="该景区不存在或已停止展示">
-        <template #bottom>
-          <wd-button size="small" @click="returnToList">
-            返回景区列表
-          </wd-button>
-        </template>
-      </wd-empty>
+    <view v-else-if="notFound" class="state-shell">
+      <PublicState kind="not-found" title="该景区不存在或已停止展示" action-text="返回景区列表" @action="returnToList" />
     </view>
-    <view v-else-if="failed" class="state">
-      <wd-empty icon="network" tip="景区详情暂时无法加载">
-        <template #bottom>
-          <wd-button size="small" @click="load">
-            重新加载
-          </wd-button>
-        </template>
-      </wd-empty>
+    <view v-else-if="failed" class="state-shell">
+      <PublicState kind="network-error" title="景区详情暂时无法加载" description="请检查网络后重新尝试。" action-text="重新加载" @action="load" />
     </view>
     <template v-else-if="attraction">
-      <wd-img v-if="attraction.cover?.url" :src="attraction.cover.url" width="100%" height="440rpx" mode="aspectFill" radius="0" enable-preview />
-      <view v-else class="hero-placeholder">
-        <wd-icon name="picture" size="38" /><text>旅享西昌</text>
-      </view>
-      <view class="content">
-        <view class="title">
-          {{ attraction.name }}
-        </view>
-        <view v-if="attraction.summary" class="summary">
-          {{ attraction.summary }}
-        </view>
-        <view class="facts">
-          <view v-if="attraction.address" class="fact">
-            <wd-icon name="location" size="18" /><text>{{ attraction.address }}</text>
-          </view>
-          <view v-if="attraction.opening_hours" class="fact">
-            <wd-icon name="time" size="18" /><text>{{ attraction.opening_hours }}</text>
-          </view>
-          <view v-if="attraction.ticket_info" class="fact">
-            <wd-icon name="money-circle" size="18" /><text>{{ attraction.ticket_info }}</text>
-          </view>
-          <view v-if="attraction.phone" class="fact action" role="button" @click="callPhone">
-            <wd-icon name="phone" size="18" /><text>{{ attraction.phone }}</text>
-          </view>
-        </view>
-        <PublicContentBody title="景区介绍" :content="attraction.description" />
-        <view v-if="attraction.scenic_spots?.length" class="section">
-          <view class="section-title">
-            景区内景点
-          </view>
-          <view class="related-list">
-            <view v-for="spot in attraction.scenic_spots" :key="spot.code" class="related" role="link" @click="openScenicSpot(spot.code)">
-              <view class="related-copy">
-                <view class="related-name">
-                  {{ spot.name }}
-                </view><view v-if="spot.summary" class="related-summary">
-                  {{ spot.summary }}
+      <view class="detail-shell">
+        <PublicDetailCover :src="attraction.cover?.url" />
+        <view class="content">
+          <PublicDetailHeading :title="attraction.name" :summary="attraction.summary" />
+          <DestinationVisitInfo :address="attraction.address" :opening-hours="attraction.opening_hours" :ticket-info="attraction.ticket_info" :phone="attraction.phone" @call="callPhone" />
+          <PublicContentBody title="景区介绍" :content="attraction.description" />
+          <view v-if="attraction.scenic_spots?.length" class="section">
+            <view class="section-title">
+              景区内景点
+            </view>
+            <view class="related-list">
+              <view v-for="spot in attraction.scenic_spots" :key="spot.id" class="related" role="link" @click="openScenicSpot(spot.id)">
+                <view class="related-media">
+                  <wd-img v-if="spot.cover?.url" :src="spot.cover.url" width="100%" height="100%" mode="aspectFill" radius="0" />
+                  <wd-icon v-else name="image" size="22" />
+                </view>
+                <view class="related-copy">
+                  <view class="related-name">
+                    {{ spot.name }}
+                  </view><view v-if="spot.summary" class="related-summary">
+                    {{ spot.summary }}
+                  </view>
                 </view>
               </view>
-              <wd-icon name="arrow-right" size="18" color="#69716c" />
             </view>
           </view>
         </view>
@@ -129,105 +106,75 @@ onLoad((query) => {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6f3;
+  background: var(--lx-color-surface-muted);
 }
-.state {
-  display: flex;
+.state-shell {
+  max-width: var(--lx-page-max);
   min-height: 78vh;
-  align-items: center;
-  justify-content: center;
-  padding: 28rpx;
+  margin: 0 auto;
+  padding: 28rpx 28rpx calc(28rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
 }
-.hero-placeholder {
-  display: flex;
-  height: 440rpx;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14rpx;
-  color: #607068;
-  background: #dfe8e1;
-  font-size: 24rpx;
+.detail-shell {
+  width: 100%;
+  max-width: var(--lx-page-max);
+  margin: 0 auto;
+  overflow: hidden;
+  background: var(--lx-color-surface);
 }
 .content {
-  padding: 36rpx 28rpx 72rpx;
-}
-.title {
-  color: #17211c;
-  font-size: 46rpx;
-  font-weight: 700;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-}
-.summary {
-  margin-top: 18rpx;
-  color: #515b56;
-  font-size: 28rpx;
-  line-height: 1.7;
-}
-.facts {
-  margin-top: 32rpx;
-  padding: 8rpx 24rpx;
-  background: #fff;
-  border: 1px solid #dfe5e0;
-  border-radius: 8px;
-}
-.fact {
-  display: flex;
-  align-items: flex-start;
-  gap: 16rpx;
-  padding: 22rpx 0;
-  color: #3f4944;
-  font-size: 26rpx;
-  line-height: 1.5;
-}
-.fact + .fact {
-  border-top: 1px solid #edf0ed;
-}
-.action {
-  color: #23744f;
+  padding: 36rpx var(--lx-space-page) calc(72rpx + env(safe-area-inset-bottom));
 }
 .section {
   margin-top: 40rpx;
 }
 .section-title {
-  color: #25302a;
+  color: var(--lx-color-text-main);
   font-size: 31rpx;
   font-weight: 650;
 }
 .related-list {
   margin-top: 18rpx;
-  overflow: hidden;
-  background: #fff;
-  border: 1px solid #dfe5e0;
-  border-radius: 8px;
+  border-top: 1px solid var(--lx-color-border-strong);
 }
 .related {
   display: flex;
   align-items: center;
   gap: 20rpx;
-  min-height: 108rpx;
-  padding: 22rpx 24rpx;
+  min-height: 124rpx;
+  padding: 20rpx 0;
   box-sizing: border-box;
 }
 .related + .related {
-  border-top: 1px solid #edf0ed;
+  border-top: 1px solid var(--lx-color-border);
+}
+.related-media {
+  display: flex;
+  width: 116rpx;
+  aspect-ratio: 4 / 3;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  color: var(--lx-color-text-tertiary);
+  background: #e5ecea;
+  border-radius: var(--lx-radius-media);
 }
 .related-copy {
   flex: 1;
   min-width: 0;
 }
 .related-name {
-  color: #25302a;
+  color: var(--lx-color-text-main);
   font-size: 28rpx;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 .related-summary {
   margin-top: 8rpx;
-  overflow: hidden;
-  color: #69716c;
+  color: var(--lx-color-text-tertiary);
   font-size: 24rpx;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 </style>

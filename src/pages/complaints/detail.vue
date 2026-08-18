@@ -3,6 +3,7 @@ import type { Complaint } from '@/api/complaints'
 import type { HttpError } from '@/http/types'
 import { ref } from 'vue'
 import ComplaintProgressView from '@/components/ComplaintProgressView.vue'
+import PublicState from '@/components/PublicState.vue'
 import { queryGuestComplaint } from '@/api/complaints'
 import { getComplaintCredential } from '@/utils/complaint-credential'
 import { currentH5Ticket } from '@/utils/h5-route-ticket'
@@ -47,39 +48,20 @@ function manualQuery() {
 
 <template>
   <view class="page">
-    <view v-if="loading" class="state">
-      <wd-loading text="正在查询投诉进度" />
-    </view><view v-else-if="missing" class="state">
-      <wd-empty tip="当前设备没有有效凭证，或该工单已失效">
-        <template #bottom>
-          <wd-button size="small" @click="manualQuery">
-            输入凭证查询
-          </wd-button>
-        </template>
-      </wd-empty>
-    </view><view v-else-if="failed" class="state">
-      <wd-empty icon="network" tip="投诉进度暂时无法加载">
-        <template #bottom>
-          <wd-button size="small" @click="load">
-            重新加载
-          </wd-button>
-        </template>
-      </wd-empty>
-    </view><ComplaintProgressView v-else-if="item" :item="item" />
+    <PublicState v-if="loading" kind="loading" title="正在查询投诉进度" />
+    <PublicState v-else-if="missing" kind="not-found" title="当前设备没有有效凭证，或该工单已失效" description="可以重新输入工单号和查询凭证。" action-text="输入凭证查询" @action="manualQuery" />
+    <PublicState v-else-if="failed" kind="network-error" title="投诉进度暂时无法加载" description="请检查网络后重新尝试。" action-text="重新加载" @action="load" />
+    <ComplaintProgressView v-else-if="item" :item="item" />
   </view>
 </template>
 
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  padding: 28rpx;
-  background: #f4f6f3;
+  max-width: var(--lx-page-max);
+  margin: 0 auto;
+  padding: 32rpx var(--lx-space-page) calc(60rpx + env(safe-area-inset-bottom));
+  background: var(--lx-color-surface);
   box-sizing: border-box;
-}
-.state {
-  display: flex;
-  min-height: 75vh;
-  align-items: center;
-  justify-content: center;
 }
 </style>

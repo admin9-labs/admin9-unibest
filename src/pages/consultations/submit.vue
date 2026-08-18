@@ -19,7 +19,7 @@ const loading = ref(true)
 const loadFailed = ref(false)
 const submitting = ref(false)
 const form = reactive<ConsultationInput>({
-  category_code: '',
+  category_id: 0,
   contact_name: '',
   contact_mobile: '',
   contact_email: '',
@@ -32,8 +32,8 @@ async function load() {
   loadFailed.value = false
   try {
     categories.value = await getConsultationCategories()
-    if (!form.category_code && categories.value.length)
-      form.category_code = categories.value[0].code
+    if (!form.category_id && categories.value.length)
+      form.category_id = categories.value[0].id
   }
   catch {
     loadFailed.value = true
@@ -44,7 +44,7 @@ async function load() {
 }
 function validate() {
   if (
-    !form.category_code
+    !form.category_id
     || !form.contact_name.trim()
     || (!form.contact_mobile?.trim() && !form.contact_email?.trim())
     || !form.subject.trim()
@@ -127,11 +127,11 @@ onLoad(load)
       </view>
       <wd-form :model="form" layout="vertical">
         <wd-form-item title="咨询类别" required>
-          <wd-radio-group v-model="form.category_code" shape="button">
+          <wd-radio-group v-model="form.category_id" shape="button">
             <wd-radio
               v-for="item in categories"
-              :key="item.code"
-              :value="item.code"
+              :key="item.id"
+              :value="item.id"
             >
               {{ item.name }}
             </wd-radio>

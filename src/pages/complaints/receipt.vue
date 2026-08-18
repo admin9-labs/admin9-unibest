@@ -1,5 +1,7 @@
 <script lang="ts" setup>
 import { ref } from 'vue'
+import PublicState from '@/components/PublicState.vue'
+import WorkOrderReceipt from '@/components/WorkOrderReceipt.vue'
 import { getComplaintCredential } from '@/utils/complaint-credential'
 
 definePage({ style: { navigationBarTitleText: '提交成功' } })
@@ -22,84 +24,18 @@ function manualQuery() {
 
 <template>
   <view class="page">
-    <view v-if="ticket && credential" class="receipt">
-      <wd-icon name="check-circle" size="54" color="#23744f" /><view class="title">
-        投诉已提交
-      </view><view class="warning">
-        查询凭证只用于查看此工单，请勿转发给他人。凭证不会出现在分享链接中。
-      </view>
-      <view class="field">
-        <text>工单号</text><view class="value">
-          {{ ticket }}
-        </view><wd-button size="small" plain @click="copy(ticket)">
-          复制
-        </wd-button>
-      </view>
-      <view class="field">
-        <text>查询凭证</text><view class="value credential">
-          {{ credential }}
-        </view><wd-button size="small" plain @click="copy(credential)">
-          复制
-        </wd-button>
-      </view>
-      <wd-button block size="large" @click="query">
-        查看办理进度
-      </wd-button>
-    </view>
-    <view v-else class="missing">
-      <wd-empty tip="当前设备未找到该工单的查询凭证" /><wd-button block @click="manualQuery">
-        手动输入凭证查询
-      </wd-button>
-    </view>
+    <WorkOrderReceipt v-if="ticket && credential" title="投诉已提交" :ticket="ticket" :credential="credential" @copy="copy" @view="query" />
+    <PublicState v-else kind="not-found" title="当前设备未找到该工单的查询凭证" description="可以手动输入工单号和查询凭证。" action-text="手动输入凭证查询" @action="manualQuery" />
   </view>
 </template>
 
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  padding: 36rpx 28rpx;
-  background: #f4f6f3;
+  max-width: 760rpx;
+  margin: 0 auto;
+  padding: 40rpx var(--lx-space-page) calc(60rpx + env(safe-area-inset-bottom));
+  background: var(--lx-color-surface);
   box-sizing: border-box;
-}
-.receipt {
-  padding: 42rpx 28rpx;
-  background: #fff;
-  border: 1px solid #dbe4df;
-  border-radius: 8px;
-}
-.title {
-  margin-top: 18rpx;
-  color: #17211c;
-  font-size: 40rpx;
-  font-weight: 700;
-}
-.warning {
-  margin: 16rpx 0 28rpx;
-  padding: 20rpx;
-  color: #735c1d;
-  background: #fff8df;
-  border-radius: 6px;
-  font-size: 24rpx;
-  line-height: 1.6;
-}
-.field {
-  margin-bottom: 24rpx;
-}
-.field > text {
-  color: #69716c;
-  font-size: 23rpx;
-}
-.value {
-  margin: 8rpx 0 12rpx;
-  color: #17211c;
-  font-size: 28rpx;
-  overflow-wrap: anywhere;
-}
-.credential {
-  font-family: monospace;
-  font-size: 23rpx;
-}
-.missing {
-  padding-top: 25vh;
 }
 </style>

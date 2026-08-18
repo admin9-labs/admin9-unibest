@@ -119,6 +119,12 @@ export default defineManifestConfig({
   /* 小程序特有相关 */
   'mp-weixin': {
     appid: VITE_WX_APPID,
+    permission: {
+      'scope.userLocation': {
+        desc: '用于地图导览中定位当前位置',
+      },
+    },
+    requiredPrivateInfos: ['getLocation'],
     setting: {
       urlCheck: false,
       // 是否启用 ES6 转 ES5

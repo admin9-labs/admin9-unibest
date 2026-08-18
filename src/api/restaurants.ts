@@ -3,11 +3,11 @@ import { publicRestaurantsRestaurantUsingGet, publicRestaurantsUsingGet } from '
 
 export type Restaurant = DiningPlaceResource
 
-export async function getRestaurants(keyword = '', categoryCode = '') {
+export async function getRestaurants(keyword = '', categoryId?: number) {
   const response = await publicRestaurantsUsingGet({
     params: {
       keyword: keyword || undefined,
-      category_code: categoryCode || undefined,
+      category_id: categoryId,
       page_size: 50,
     },
     options: { auth: 'public', hideErrorToast: true },
@@ -15,9 +15,9 @@ export async function getRestaurants(keyword = '', categoryCode = '') {
   return response.data as Restaurant[]
 }
 
-export async function getRestaurant(code: string) {
+export async function getRestaurant(id: number) {
   const response = await publicRestaurantsRestaurantUsingGet({
-    params: { restaurant: code },
+    params: { restaurant: id },
     options: { auth: 'public', hideErrorToast: true },
   })
   return response.data.restaurant as Restaurant

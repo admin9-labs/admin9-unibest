@@ -1,21 +1,27 @@
 <script lang="ts" setup>
 import type { Article } from '@/api/articles'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { getArticles } from '@/api/articles'
+import PublicContentCard from '@/components/PublicContentCard.vue'
 
 defineOptions({ name: 'ArticleList' })
 definePage({ style: { navigationBarTitleText: '攻略资讯' } })
-const categories = [{ code: '', name: '全部' }, { code: 'guide', name: '攻略' }, { code: 'news', name: '资讯' }, { code: 'notice', name: '通知' }]
-const category = ref('')
+const selectedCategoryId = ref<number | null>(null)
 const keyword = ref('')
 const articles = ref<Article[]>([])
 const loading = ref(true)
 const failed = ref(false)
+const categories = computed(() => Array.from(new Map(articles.value.flatMap(article => article.category ? [[article.category.id, article.category] as const] : [])).values()))
+const visibleArticles = computed(() => selectedCategoryId.value === null
+  ? articles.value
+  : articles.value.filter(article => article.category?.id === selectedCategoryId.value))
 async function load() {
   loading.value = true
   failed.value = false
   try {
-    articles.value = await getArticles(keyword.value.trim(), category.value)
+    articles.value = await getArticles(keyword.value.trim())
+    if (selectedCategoryId.value !== null && !articles.value.some(article => article.category?.id === selectedCategoryId.value))
+      selectedCategoryId.value = null
   }
   catch {
     failed.value = true
@@ -24,57 +30,73 @@ async function load() {
     loading.value = false
   }
 }
-function selectCategory(code: string) {
-  category.value = code
-  load()
+function selectCategory(id: number | null) {
+  selectedCategoryId.value = id
 }
-function openDetail(code: string) {
-  uni.navigateTo({ url: `/pages/articles/detail?code=${encodeURIComponent(code)}` })
+function openDetail(id: number) {
+  uni.navigateTo({ url: `/pages/articles/detail?id=${id}` })
 }
 onLoad(load)
 </script>
 
 <template>
   <view class="page">
-    <view class="intro">
-      <text class="eyebrow">STORIES</text><view class="title">
-        读懂西昌，再出发
-      </view><view class="description">
-        浏览已发布的攻略、资讯与通知。
+    <view class="page-shell">
+      <scroll-view class="categories" scroll-x>
+        <view class="category-row">
+          <wd-tag
+            :type="selectedCategoryId === null ? 'primary' : 'default'"
+            :variant="selectedCategoryId === null ? 'dark' : 'plain'"
+            size="large"
+            @click="selectCategory(null)"
+          >
+            全部
+          </wd-tag>
+          <wd-tag
+            v-for="item in categories"
+            :key="item.id"
+            :type="selectedCategoryId === item.id ? 'primary' : 'default'"
+            :variant="selectedCategoryId === item.id ? 'dark' : 'plain'"
+            size="large"
+            @click="selectCategory(item.id)"
+          >
+            {{ item.name }}
+          </wd-tag>
+        </view>
+      </scroll-view>
+      <view class="search-wrap">
+        <wd-search v-model="keyword" placeholder="搜索本栏目文章" hide-cancel :maxlength="120" @search="load" @clear="load" />
       </view>
-    </view>
-    <view class="categories">
-      <wd-tag v-for="item in categories" :key="item.code" :type="category === item.code ? 'primary' : 'default'" clickable @click="selectCategory(item.code)">
-        {{ item.name }}
-      </wd-tag>
-    </view>
-    <wd-search v-model="keyword" placeholder="搜索本栏目文章" hide-cancel maxlength="120" @search="load" @clear="load" />
-    <view v-if="loading" class="state">
-      <wd-loading text="正在加载文章" />
-    </view>
-    <view v-else-if="failed" class="state">
-      <wd-empty icon="network" tip="文章暂时无法加载">
-        <template #bottom>
-          <wd-button size="small" @click="load">
-            重新加载
-          </wd-button>
-        </template>
-      </wd-empty>
-    </view>
-    <view v-else-if="articles.length === 0" class="state">
-      <wd-empty tip="暂无符合条件的文章" />
-    </view>
-    <view v-else class="article-list">
-      <view v-for="article in articles" :key="article.code" class="article" role="link" @click="openDetail(article.code)">
-        <wd-img v-if="article.cover?.url" :src="article.cover.url" width="180rpx" height="160rpx" mode="aspectFill" radius="8" /><view class="article-copy">
-          <view class="article-meta">
-            {{ article.category?.name || '文章' }}
-          </view><view class="article-title">
-            {{ article.title }}
-          </view><view v-if="article.summary" class="article-summary">
-            {{ article.summary }}
-          </view>
-        </view><wd-icon name="arrow-right" size="18" color="#69716c" />
+      <view v-if="loading" class="state">
+        <wd-loading text="正在加载文章" />
+      </view>
+      <view v-else-if="failed" class="state">
+        <wd-empty icon="network" tip="文章暂时无法加载">
+          <template #bottom>
+            <wd-button size="small" @click="load">
+              重新加载
+            </wd-button>
+          </template>
+        </wd-empty>
+      </view>
+      <view v-else-if="visibleArticles.length === 0" class="state">
+        <wd-empty tip="暂无符合条件的文章" />
+      </view>
+      <view v-else class="article-list">
+        <PublicContentCard
+          v-for="article in visibleArticles"
+          :key="article.id"
+          class="article"
+          :title="article.title"
+          :summary="article.summary"
+          :image-url="article.cover?.url"
+          layout="vertical"
+          @click="openDetail(article.id)"
+        >
+          <template v-if="article.category" #eyebrow>
+            {{ article.category.name }}
+          </template>
+        </PublicContentCard>
       </view>
     </view>
   </view>
@@ -83,35 +105,36 @@ onLoad(load)
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  padding: 28rpx;
-  background: #f4f6f3;
+  background: var(--lx-color-surface-muted);
+}
+
+.page-shell {
+  width: 100%;
+  max-width: 520px;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 20rpx 24rpx calc(40rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
 }
-.intro {
-  padding: 28rpx 4rpx 28rpx;
-}
-.eyebrow {
-  color: #34765b;
-  font-size: 21rpx;
-  font-weight: 600;
-}
-.title {
-  margin-top: 10rpx;
-  color: #17211c;
-  font-size: 44rpx;
-  font-weight: 700;
-}
-.description {
-  margin-top: 12rpx;
-  color: #69716c;
-  font-size: 26rpx;
-}
+
 .categories {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 16rpx;
-  margin-bottom: 22rpx;
+  width: 100%;
+  margin-bottom: 20rpx;
+  white-space: nowrap;
 }
+
+.category-row {
+  display: inline-flex;
+  gap: 14rpx;
+  padding: 2rpx 2rpx 4rpx;
+}
+
+.search-wrap {
+  overflow: hidden;
+  border: 1px solid var(--lx-color-border);
+  border-radius: var(--lx-radius-card);
+}
+
 .state {
   display: flex;
   min-height: 500rpx;
@@ -119,46 +142,8 @@ onLoad(load)
   justify-content: center;
 }
 .article-list {
-  margin-top: 24rpx;
-  overflow: hidden;
-  background: #fff;
-  border: 1px solid #dfe5e0;
-  border-radius: 8px;
-}
-.article {
-  display: flex;
-  align-items: center;
+  display: grid;
   gap: 20rpx;
-  min-height: 180rpx;
-  padding: 24rpx;
-  box-sizing: border-box;
-}
-.article + .article {
-  border-top: 1px solid #edf0ed;
-}
-.article-copy {
-  flex: 1;
-  min-width: 0;
-}
-.article-meta {
-  color: #34765b;
-  font-size: 22rpx;
-}
-.article-title {
-  margin-top: 7rpx;
-  color: #17211c;
-  font-size: 29rpx;
-  font-weight: 600;
-  line-height: 1.4;
-}
-.article-summary {
-  display: -webkit-box;
-  margin-top: 8rpx;
-  overflow: hidden;
-  color: #69716c;
-  font-size: 24rpx;
-  line-height: 1.5;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  margin-top: 24rpx;
 }
 </style>

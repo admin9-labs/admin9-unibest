@@ -11,9 +11,9 @@ export async function getScenicSpots(keyword = '') {
   return response.data as ScenicSpot[]
 }
 
-export async function getScenicSpot(code: string) {
+export async function getScenicSpot(id: number) {
   const response = await publicScenicSpotsScenicSpotUsingGet({
-    params: { scenicSpot: code },
+    params: { scenicSpot: id },
     options: { auth: 'public', hideErrorToast: true },
   })
   return response.data.scenic_spot as ScenicSpot

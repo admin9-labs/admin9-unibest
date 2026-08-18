@@ -6,22 +6,22 @@ import { useTokenStore } from '@/store/token'
 import { saveComplaintCredential } from '@/utils/complaint-credential'
 
 definePage({ style: { navigationBarTitleText: '旅游投诉' } })
-interface PendingEvidence { path: string, name: string, file: File | null, uploading: boolean, mediaId?: number, uploadToken?: string }
+interface PendingEvidence { path: string, name: string, file: File | null, uploading: boolean, fileId?: number, uploadToken?: string }
 const tokenStore = useTokenStore()
 const categories = ref<ComplaintCategory[]>([])
 const loading = ref(true)
 const loadFailed = ref(false)
 const submitting = ref(false)
 const evidence = ref<PendingEvidence[]>([])
-const form = reactive<ComplaintInput>({ category_code: '', contact_name: '', contact_mobile: '', contact_email: '', target_type: null, target_name: '', title: '', content: '' })
+const form = reactive<ComplaintInput>({ category_id: 0, contact_name: '', contact_mobile: '', contact_email: '', target_type: null, target_name: '', title: '', content: '' })
 
 async function load() {
   loading.value = true
   loadFailed.value = false
   try {
     categories.value = await getComplaintCategories()
-    if (!form.category_code && categories.value.length)
-      form.category_code = categories.value[0].code
+    if (!form.category_id && categories.value.length)
+      form.category_id = categories.value[0].id
   }
   catch { loadFailed.value = true }
   finally { loading.value = false }
@@ -41,21 +41,21 @@ function removeEvidence(index: number) {
 }
 async function uploadPendingEvidence() {
   for (const item of evidence.value) {
-    if (item.mediaId && item.uploadToken)
+    if (item.fileId && item.uploadToken)
       continue
     if (!item.file)
       throw new Error('当前图片无法上传，请删除后重新选择')
     item.uploading = true
     try {
       const result = await uploadComplaintEvidence(item.file)
-      item.mediaId = result.evidence.id
+      item.fileId = result.evidence.id
       item.uploadToken = result.upload_token
     }
     finally { item.uploading = false }
   }
 }
 function validate() {
-  if (!form.category_code || !form.contact_name.trim() || (!form.contact_mobile?.trim() && !form.contact_email?.trim()) || !form.target_name.trim() || !form.title.trim() || !form.content.trim()) {
+  if (!form.category_id || !form.contact_name.trim() || (!form.contact_mobile?.trim() && !form.contact_email?.trim()) || !form.target_name.trim() || !form.title.trim() || !form.content.trim()) {
     uni.showToast({ icon: 'none', title: '请完整填写必填信息' })
     return false
   }
@@ -76,7 +76,7 @@ async function submit() {
       target_name: form.target_name.trim(),
       title: form.title.trim(),
       content: form.content.trim(),
-      evidence: evidence.value.map(item => ({ media_id: item.mediaId!, upload_token: item.uploadToken! })),
+      evidence: evidence.value.map(item => ({ file_id: item.fileId!, upload_token: item.uploadToken! })),
     }
     if (tokenStore.hasLogin) {
       const item = await createMemberComplaint(input)
@@ -118,8 +118,8 @@ onLoad(load)
       </view>
       <wd-form :model="form" layout="vertical">
         <wd-form-item title="投诉类别" required>
-          <wd-radio-group v-model="form.category_code" shape="button">
-            <wd-radio v-for="item in categories" :key="item.code" :value="item.code">
+          <wd-radio-group v-model="form.category_id" shape="button">
+            <wd-radio v-for="item in categories" :key="item.id" :value="item.id">
               {{ item.name }}
             </wd-radio>
           </wd-radio-group>
@@ -151,7 +151,7 @@ onLoad(load)
                 ×
               </button>
             </view><button v-if="evidence.length < 6" class="add-evidence" @click="chooseEvidence">
-              <wd-icon name="add" size="24" /><text>添加图片</text>
+              <wd-icon name="plus" size="24" /><text>添加图片</text>
             </button>
           </view>
         </wd-form-item>

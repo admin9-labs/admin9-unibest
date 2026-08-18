@@ -6,7 +6,7 @@ export async function getAudioGuides(keyword = '') {
   const response = await publicAudioGuidesUsingGet({ params: { keyword: keyword || undefined, page_size: 50 }, options: { auth: 'public', hideErrorToast: true } })
   return response.data as AudioGuide[]
 }
-export async function getAudioGuide(code: string) {
-  const response = await publicAudioGuidesAudioGuideUsingGet({ params: { audioGuide: code }, options: { auth: 'public', hideErrorToast: true } })
+export async function getAudioGuide(id: number) {
+  const response = await publicAudioGuidesAudioGuideUsingGet({ params: { audioGuide: id }, options: { auth: 'public', hideErrorToast: true } })
   return response.data.audio_guide as AudioGuide
 }

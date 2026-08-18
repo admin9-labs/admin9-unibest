@@ -2,6 +2,8 @@
 import type { ScenicSpot } from '@/api/scenic-spots'
 import { ref } from 'vue'
 import { getScenicSpots } from '@/api/scenic-spots'
+import DestinationListItem from '@/components/DestinationListItem.vue'
+import PublicState from '@/components/PublicState.vue'
 
 defineOptions({ name: 'ScenicSpotList' })
 definePage({ style: { navigationBarTitleText: '西昌景点' } })
@@ -25,8 +27,13 @@ async function load() {
   }
 }
 
-function openDetail(code: string) {
-  uni.navigateTo({ url: `/pages/scenic-spots/detail?code=${encodeURIComponent(code)}` })
+function openDetail(id: number) {
+  uni.navigateTo({ url: `/pages/scenic-spots/detail?id=${id}` })
+}
+
+function clearSearch() {
+  keyword.value = ''
+  load()
 }
 
 onLoad(load)
@@ -34,49 +41,26 @@ onLoad(load)
 
 <template>
   <view class="page">
-    <view class="intro">
-      <text class="eyebrow">SCENIC SPOTS</text>
-      <view class="title">
-        山水之间，遇见西昌
+    <view class="page-shell">
+      <view class="search-wrap">
+        <wd-search v-model="keyword" placeholder="搜索景点名称或地址" hide-cancel :maxlength="120" @search="load" @clear="clearSearch" />
       </view>
-      <view class="description">
-        浏览当前开放展示的景点信息。
-      </view>
-    </view>
-    <wd-search v-model="keyword" placeholder="搜索景点名称或地址" hide-cancel maxlength="120" @search="load" @clear="load" />
 
-    <view v-if="loading" class="state">
-      <wd-loading text="正在加载景点" />
-    </view>
-    <view v-else-if="failed" class="state">
-      <wd-empty icon="network" tip="景点信息暂时无法加载">
-        <template #bottom>
-          <wd-button size="small" @click="load">
-            重新加载
-          </wd-button>
-        </template>
-      </wd-empty>
-    </view>
-    <view v-else-if="scenicSpots.length === 0" class="state">
-      <wd-empty tip="暂无符合条件的景点" />
-    </view>
-    <view v-else class="spot-list">
-      <view v-for="spot in scenicSpots" :key="spot.code" class="spot" role="link" @click="openDetail(spot.code)">
-        <wd-img v-if="spot.cover?.url" :src="spot.cover.url" width="100%" height="320rpx" mode="aspectFill" radius="8" lazy-load />
-        <view v-else class="cover-placeholder">
-          <wd-icon name="picture" size="32" /><text>旅享西昌</text>
-        </view>
-        <view class="spot-body">
-          <view class="spot-name">
-            {{ spot.name }}
-          </view>
-          <view v-if="spot.summary" class="spot-summary">
-            {{ spot.summary }}
-          </view>
-          <view v-if="spot.address" class="spot-meta">
-            <wd-icon name="location" size="15" />{{ spot.address }}
-          </view>
-        </view>
+      <PublicState v-if="loading" kind="loading" title="正在加载景点" />
+      <PublicState v-else-if="failed" kind="network-error" title="景点信息暂时无法加载" description="请检查网络后重新尝试。" action-text="重新加载" @action="load" />
+      <PublicState v-else-if="scenicSpots.length === 0 && keyword.trim()" kind="filtered-empty" title="未找到匹配的景点" description="可以缩短关键词或清除搜索。" action-text="清除搜索" @action="clearSearch" />
+      <PublicState v-else-if="scenicSpots.length === 0" kind="initial-empty" title="暂时没有可浏览的景点" />
+      <view v-else class="spot-list">
+        <DestinationListItem
+          v-for="spot in scenicSpots"
+          :key="spot.id"
+          class="spot"
+          :title="spot.name"
+          :summary="spot.summary"
+          :image-url="spot.cover?.url"
+          :address="spot.address"
+          @click="openDetail(spot.id)"
+        />
       </view>
     </view>
   </view>
@@ -85,82 +69,26 @@ onLoad(load)
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  padding: 28rpx;
-  background: #f4f6f3;
+  background: var(--lx-color-surface-muted);
+}
+
+.page-shell {
+  width: 100%;
+  max-width: var(--lx-page-max);
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 20rpx var(--lx-space-page) calc(40rpx + env(safe-area-inset-bottom));
   box-sizing: border-box;
 }
-.intro {
-  padding: 28rpx 4rpx 32rpx;
+
+.search-wrap {
+  overflow: hidden;
+  border: 1px solid var(--lx-color-border);
+  border-radius: var(--lx-radius-card);
 }
-.eyebrow {
-  color: #34765b;
-  font-size: 21rpx;
-  font-weight: 600;
-}
-.title {
-  margin-top: 10rpx;
-  color: #17211c;
-  font-size: 44rpx;
-  font-weight: 700;
-}
-.description {
-  margin-top: 12rpx;
-  color: #69716c;
-  font-size: 26rpx;
-}
-.state {
-  display: flex;
-  min-height: 520rpx;
-  align-items: center;
-  justify-content: center;
-}
+
 .spot-list {
-  display: grid;
-  gap: 24rpx;
   margin-top: 24rpx;
-}
-.spot {
-  overflow: hidden;
-  background: #fff;
-  border: 1px solid #dfe5e0;
-  border-radius: 8px;
-}
-.cover-placeholder {
-  display: flex;
-  height: 320rpx;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 12rpx;
-  color: #607068;
-  background: #e4ebe6;
-  font-size: 23rpx;
-}
-.spot-body {
-  padding: 28rpx;
-}
-.spot-name {
-  color: #17211c;
-  font-size: 34rpx;
-  font-weight: 650;
-}
-.spot-summary {
-  display: -webkit-box;
-  margin-top: 12rpx;
-  overflow: hidden;
-  color: #515b56;
-  font-size: 26rpx;
-  line-height: 1.6;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
-}
-.spot-meta {
-  display: flex;
-  align-items: flex-start;
-  gap: 8rpx;
-  margin-top: 20rpx;
-  color: #69716c;
-  font-size: 23rpx;
-  line-height: 1.5;
+  border-top: 1px solid var(--lx-color-border);
 }
 </style>

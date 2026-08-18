@@ -11,9 +11,9 @@ export async function getAttractions(keyword = '') {
   return response.data as Attraction[]
 }
 
-export async function getAttraction(code: string) {
+export async function getAttraction(id: number) {
   const response = await publicAttractionsAttractionUsingGet({
-    params: { attraction: code },
+    params: { attraction: id },
     options: { auth: 'public', hideErrorToast: true },
   })
   return response.data.attraction as Attraction

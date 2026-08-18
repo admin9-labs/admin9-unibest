@@ -3,6 +3,7 @@ import type { Complaint } from '@/api/complaints'
 import type { HttpError } from '@/http/types'
 import { ref } from 'vue'
 import ComplaintProgressView from '@/components/ComplaintProgressView.vue'
+import PublicState from '@/components/PublicState.vue'
 import { getMemberComplaint } from '@/api/complaints'
 import { currentH5Ticket } from '@/utils/h5-route-ticket'
 
@@ -42,33 +43,20 @@ onLoad((query) => {
 
 <template>
   <view class="page">
-    <view v-if="loading" class="state">
-      <wd-loading text="正在加载投诉详情" />
-    </view><view v-else-if="notFound" class="state">
-      <wd-empty tip="该投诉不存在或不属于当前账号" />
-    </view><view v-else-if="failed" class="state">
-      <wd-empty icon="network" tip="投诉详情暂时无法加载">
-        <template #bottom>
-          <wd-button size="small" @click="load">
-            重新加载
-          </wd-button>
-        </template>
-      </wd-empty>
-    </view><ComplaintProgressView v-else-if="item" :item="item" member />
+    <PublicState v-if="loading" kind="loading" title="正在加载投诉详情" />
+    <PublicState v-else-if="notFound" kind="not-found" title="该投诉不存在或不属于当前账号" />
+    <PublicState v-else-if="failed" kind="network-error" title="投诉详情暂时无法加载" description="请检查网络后重新尝试。" action-text="重新加载" @action="load" />
+    <ComplaintProgressView v-else-if="item" :item="item" member />
   </view>
 </template>
 
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  padding: 28rpx;
-  background: #f4f6f3;
+  max-width: var(--lx-page-max);
+  margin: 0 auto;
+  padding: 32rpx var(--lx-space-page) calc(60rpx + env(safe-area-inset-bottom));
+  background: var(--lx-color-surface);
   box-sizing: border-box;
-}
-.state {
-  display: flex;
-  min-height: 75vh;
-  align-items: center;
-  justify-content: center;
 }
 </style>

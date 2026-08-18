@@ -13,16 +13,15 @@ interface ChatMessage {
   answerData: AiChatAnswer | null
   error: string
   feedbackSent: boolean
-  feedbackCategory: string
+  feedbackCategoryId: number | null
 }
 
-const code = ref('')
+const id = ref<number | null>(null)
 const assistant = ref<AiAssistant | null>(null)
 const question = ref('')
 const answer = ref<AiChatAnswer | null>(null)
 const messages = ref<ChatMessage[]>([])
 const categories = ref<AiFeedbackCategory[]>([])
-const selectedCategory = ref('')
 const loading = ref(true)
 const notFound = ref(false)
 const failed = ref(false)
@@ -43,7 +42,7 @@ async function scrollToLatestMessage() {
 }
 
 async function load() {
-  if (!code.value) {
+  if (id.value === null) {
     notFound.value = true
     loading.value = false
     return
@@ -52,14 +51,13 @@ async function load() {
   notFound.value = false
   failed.value = false
   try {
-    assistant.value = await getAiAssistant(code.value)
+    assistant.value = await getAiAssistant(id.value)
     try {
       categories.value = await getAiFeedbackCategories()
     }
     catch {
       categories.value = []
     }
-    selectedCategory.value = categories.value[0]?.code || ''
     messages.value = [{
       id: ++messageId,
       question: '',
@@ -68,7 +66,7 @@ async function load() {
       answerData: null,
       error: '',
       feedbackSent: false,
-      feedbackCategory: categories.value[0]?.code || '',
+      feedbackCategoryId: categories.value[0]?.id ?? null,
     }]
   }
   catch (error) {
@@ -97,7 +95,7 @@ async function ask() {
     answerData: null,
     error: '',
     feedbackSent: false,
-    feedbackCategory: categories.value[0]?.code || '',
+    feedbackCategoryId: categories.value[0]?.id ?? null,
   }
   messages.value.push(draft)
   question.value = ''
@@ -105,7 +103,7 @@ async function ask() {
 }
 
 async function runStream(draft: ChatMessage) {
-  if (asking.value)
+  if (asking.value || id.value === null)
     return
   answer.value = null
   feedbackSent.value = false
@@ -114,7 +112,7 @@ async function runStream(draft: ChatMessage) {
   abortController.value = controller
   await scrollToLatestMessage()
   try {
-    const result = await streamAiAssistant(code.value, draft.question, {
+    const result = await streamAiAssistant(id.value, draft.question, {
       signal: controller.signal,
       onDelta(content) {
         draft.answer += content
@@ -165,14 +163,14 @@ async function feedback(target: ChatMessage | 'helpful' | 'unhelpful', requested
     : target
   const rating = typeof target === 'string' ? target : requestedRating
   const answerData = message?.answerData || answer.value
-  if (!message || !rating || !answerData || !message.feedbackCategory || feedbackSubmitting.value || message.feedbackSent)
+  if (!message || !rating || !answerData || message.feedbackCategoryId === null || feedbackSubmitting.value || message.feedbackSent)
     return
   feedbackSubmitting.value = true
   try {
     await submitAiFeedback({
       message_reference: answerData.message_reference,
       rating,
-      category_code: message.feedbackCategory,
+      category_id: message.feedbackCategoryId,
     })
     message.feedbackSent = true
     feedbackSent.value = true
@@ -192,7 +190,8 @@ function isFeedbackVisible(message: ChatMessage) {
 }
 
 onLoad((query) => {
-  code.value = typeof query?.code === 'string' ? decodeURIComponent(query.code) : ''
+  const parsed = Number(query?.id)
+  id.value = Number.isInteger(parsed) && parsed > 0 ? parsed : null
   load()
 })
 onBeforeUnmount(() => abortController.value?.abort())
@@ -221,7 +220,7 @@ defineExpose({ question, answer, messages, asking, ask, stop, feedback })
     <template v-else-if="assistant">
       <view class="assistant-header">
         <view class="assistant-mark">
-          <wd-icon name="chat" size="24" />
+          <wd-icon name="message" size="24" />
         </view>
         <view class="assistant-copy">
           <view class="assistant-name">
@@ -279,8 +278,8 @@ defineExpose({ question, answer, messages, asking, ask, stop, feedback })
               <view class="feedback-title">
                 这条回答是否有帮助？
               </view>
-              <wd-radio-group v-model="item.feedbackCategory" shape="button">
-                <wd-radio v-for="category in categories" :key="category.code" :value="category.code">
+              <wd-radio-group v-model="item.feedbackCategoryId" shape="button">
+                <wd-radio v-for="category in categories" :key="category.id" :value="category.id">
                   {{ category.name }}
                 </wd-radio>
               </wd-radio-group>
@@ -322,7 +321,7 @@ defineExpose({ question, answer, messages, asking, ask, stop, feedback })
 .page {
   min-height: 100vh;
   padding: 24rpx 28rpx 38rpx;
-  background: #f4f6f3;
+  background: var(--lx-color-surface-muted);
   box-sizing: border-box;
 }
 .state {
@@ -335,8 +334,8 @@ defineExpose({ question, answer, messages, asking, ask, stop, feedback })
   display: flex;
   align-items: center;
   padding: 24rpx;
-  background: #fff;
-  border: 1px solid #dbe4df;
+  background: var(--lx-color-surface);
+  border: 1px solid var(--lx-color-border);
   border-radius: 8px;
 }
 .assistant-mark {
@@ -347,7 +346,7 @@ defineExpose({ question, answer, messages, asking, ask, stop, feedback })
   align-items: center;
   justify-content: center;
   color: #fff;
-  background: #5d4d78;
+  background: var(--lx-color-primary-strong);
   border-radius: 8px;
 }
 .assistant-copy {
@@ -415,13 +414,13 @@ defineExpose({ question, answer, messages, asking, ask, stop, feedback })
 }
 .user-bubble {
   color: #fff;
-  background: #5d4d78;
+  background: var(--lx-color-primary-strong);
 }
 .assistant-bubble {
   min-width: 180rpx;
   color: #25302a;
-  background: #fff;
-  border: 1px solid #dbe4df;
+  background: var(--lx-color-surface);
+  border: 1px solid var(--lx-color-border);
 }
 .answer-text {
   color: #17211c;
@@ -446,7 +445,7 @@ defineExpose({ question, answer, messages, asking, ask, stop, feedback })
 .typing view {
   width: 10rpx;
   height: 10rpx;
-  background: #8a7da0;
+  background: var(--lx-color-primary);
   border-radius: 50%;
 }
 .cancelled-label,

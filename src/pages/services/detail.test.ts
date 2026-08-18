@@ -14,10 +14,11 @@ function mountPage() {
 
 describe('service information detail page', () => {
   it('shows rich service details and connects phone, location and safe attachments', async () => {
-    mocks.getServiceInformationDetail.mockResolvedValueOnce({ code: 'visitor-center', title: '邛海游客服务', type: { code: 'visitor-center', name: '游客中心' }, provider: '旅享西昌', service_area: '邛海', summary: '便民协助', content: '<h2>服务流程</h2><p>现场咨询</p>', address: '海滨路', latitude: 27.86, longitude: 102.27, phone: '0834-000101', service_hours: '09:00-17:30', cover: null, attachments: [{ name: '服务指南', url: 'https://example.com/guide' }] })
+    mocks.getServiceInformationDetail.mockResolvedValueOnce({ id: 801, title: '邛海游客服务', type: { id: 81, name: '游客中心' }, provider: '旅享西昌', service_area: '邛海', summary: '便民协助', content: '<h2>服务流程</h2><p>现场咨询</p>', address: '海滨路', latitude: 27.86, longitude: 102.27, phone: '0834-000101', service_hours: '09:00-17:30', cover: null, attachments: [{ name: '服务指南', url: 'https://example.com/guide' }] })
     const wrapper = mountPage()
-    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ code: 'visitor-center' })
+    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ id: '801' })
     await flushPromises()
+    expect(wrapper.get('.detail-category').text()).toBe('游客中心')
     expect(wrapper.getComponent(PublicContentBody).props('content')).toBe('<h2>服务流程</h2><p>现场咨询</p>')
     await wrapper.find('.fact.action').trigger('click')
     expect(uni.makePhoneCall).toHaveBeenCalledWith({ phoneNumber: '0834-000101' })
@@ -30,7 +31,7 @@ describe('service information detail page', () => {
   it('handles missing and retryable details', async () => {
     mocks.getServiceInformationDetail.mockRejectedValueOnce({ statusCode: 404 })
     const wrapper = mountPage()
-    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ code: 'missing' })
+    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ id: '999' })
     await flushPromises()
     expect(wrapper.text()).toContain('不存在或已停止展示')
   })

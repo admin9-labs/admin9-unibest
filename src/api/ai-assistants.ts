@@ -27,7 +27,7 @@ export interface AiChatStreamOptions {
 }
 
 export type AiChatStreamEvent
-  = | { event: 'start', data: { assistant: { code: string, name: string } } }
+  = | { event: 'start', data: { assistant: { id: number, name: string } } }
     | { event: 'delta', data: { content: string } }
     | { event: 'complete', data: Omit<AiChatAnswer, 'assistant'> }
     | { event: 'error', data: { error_code?: string } }
@@ -39,34 +39,34 @@ export async function getAiAssistants() {
   return response.data
 }
 
-export async function getAiAssistant(code: string) {
+export async function getAiAssistant(id: number) {
   const response = await publicAiAssistantsAiAssistantUsingGet({
-    params: { aiAssistant: code },
+    params: { aiAssistant: id },
     options: publicOptions,
   })
   return response.data.ai_assistant
 }
 
 /** JSON chat remains available as the compatibility fallback for clients without fetch. */
-export async function askAiAssistant(code: string, message: string) {
+export async function askAiAssistant(id: number, message: string) {
   const response = await publicAiAssistantsAiAssistantChatUsingPost({
-    params: { aiAssistant: code },
+    params: { aiAssistant: id },
     body: { message },
     options: publicOptions,
   })
   return response.data.chat
 }
 
-export async function streamAiAssistant(code: string, message: string, options: AiChatStreamOptions = {}): Promise<AiChatAnswer> {
+export async function streamAiAssistant(id: number, message: string, options: AiChatStreamOptions = {}): Promise<AiChatAnswer> {
   if (typeof globalThis.fetch !== 'function') {
-    const answer = await withAbort(askAiAssistant(code, message), options.signal)
+    const answer = await withAbort(askAiAssistant(id, message), options.signal)
     options.onDelta?.(answer.answer)
     return answer
   }
 
   let response: Response
   try {
-    response = await fetch(resolveStreamUrl(code), {
+    response = await fetch(resolveStreamUrl(id), {
       method: 'POST',
       headers: {
         'Accept': 'text/event-stream, application/json',
@@ -190,7 +190,7 @@ export async function streamAiAssistant(code: string, message: string, options: 
     throw new Error('AI 助手未完成本次回答')
   return {
     ...complete,
-    assistant: assistant || { code, name: code },
+    assistant: assistant || { id, name: String(id) },
   }
 }
 
@@ -226,8 +226,8 @@ export async function submitAiFeedback(input: AiFeedbackInput) {
   return response.data.feedback
 }
 
-function resolveStreamUrl(code: string) {
-  const path = `/api/public/ai-assistants/${encodeURIComponent(code)}/chat/stream`
+function resolveStreamUrl(id: number) {
+  const path = `/api/public/ai-assistants/${id}/chat/stream`
   // H5 dev/prod uses the same-origin API path so Vite or the deployed host can proxy it.
   if (import.meta.env.DEV)
     return path

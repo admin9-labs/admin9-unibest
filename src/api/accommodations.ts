@@ -8,7 +8,7 @@ export async function getAccommodations(keyword = '') {
   return response.data as Accommodation[]
 }
 
-export async function getAccommodation(code: string) {
-  const response = await publicAccommodationsAccommodationUsingGet({ params: { accommodation: code }, options: { auth: 'public', hideErrorToast: true } })
+export async function getAccommodation(id: number) {
+  const response = await publicAccommodationsAccommodationUsingGet({ params: { accommodation: id }, options: { auth: 'public', hideErrorToast: true } })
   return response.data.accommodation as Accommodation
 }

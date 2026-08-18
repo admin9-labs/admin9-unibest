@@ -8,7 +8,7 @@ export async function getTravelRoutes(keyword = '') {
   return response.data as TravelRoute[]
 }
 
-export async function getTravelRoute(code: string) {
-  const response = await publicTravelRoutesTravelRouteUsingGet({ params: { travelRoute: code }, options: { auth: 'public', hideErrorToast: true } })
+export async function getTravelRoute(id: number) {
+  const response = await publicTravelRoutesTravelRouteUsingGet({ params: { travelRoute: id }, options: { auth: 'public', hideErrorToast: true } })
   return response.data.travel_route as TravelRoute
 }

@@ -1,31 +1,52 @@
 <script lang="ts" setup>
 import type { Complaint } from '@/api/complaints'
+import { computed } from 'vue'
 import { complaintStatus, formatComplaintTime } from '@/utils/complaint'
+import WorkOrderProgress from './WorkOrderProgress.vue'
 
-defineProps<{ item: Complaint, member?: boolean }>()
+const props = defineProps<{ item: Complaint, member?: boolean }>()
+
+const statusPresentation = computed(() => ({
+  pending: { hint: '投诉已收到，等待受理。', tone: 'pending' as const },
+  processing: { hint: '投诉已受理，正在办理。', tone: 'active' as const },
+  resolved: { hint: '处理结果已经形成。', tone: 'complete' as const },
+  closed: { hint: '该投诉流程已关闭。', tone: 'closed' as const },
+}[props.item.status]))
+
+const events = computed(() => [
+  { label: '已提交', value: props.item.created_at },
+  { label: '已受理', value: props.item.accepted_at },
+  { label: '已处理', value: props.item.resolved_at },
+  { label: '已关闭', value: props.item.closed_at },
+].filter((event): event is { label: string, value: string } => Boolean(event.value)).map(event => ({ label: event.label, time: formatComplaintTime(event.value) })))
 </script>
 
 <template>
   <view class="content">
+    <WorkOrderProgress :label="complaintStatus[item.status].label" :hint="statusPresentation.hint" :tone="statusPresentation.tone" :events="events" />
     <view class="heading">
       <view class="title">
         {{ item.title }}
       </view>
-      <wd-tag :type="complaintStatus[item.status].type">
-        {{ complaintStatus[item.status].label }}
-      </wd-tag>
     </view>
     <view class="ticket">
       {{ item.ticket_no }} · {{ item.category?.name || '旅游投诉' }}
     </view>
-    <view v-if="member && item.contact" class="contact">
-      <view>{{ item.contact.name }}</view><view v-if="item.contact.mobile">
-        {{ item.contact.mobile }}
-      </view><view v-if="item.contact.email">
-        {{ item.contact.email }}
+    <view v-if="item.resolution_content" class="section resolution">
+      <view class="section-title">
+        处理结果
+      </view><view class="long-text">
+        {{ item.resolution_content }}
       </view>
     </view>
-    <view class="section">
+    <view v-if="item.close_reason" class="section">
+      <view class="section-title">
+        关闭说明
+      </view><view class="long-text">
+        {{ item.close_reason }}
+      </view>
+    </view>
+    <view class="section target-section">
       <view class="section-title">
         投诉对象
       </view><view class="long-text">
@@ -47,30 +68,16 @@ defineProps<{ item: Complaint, member?: boolean }>()
         <image v-for="image in item.evidence" :key="image.id" :src="image.url" mode="aspectFill" />
       </view>
     </view>
-    <view v-if="item.resolution_content" class="section resolution">
+    <view v-if="member && item.contact" class="section contact">
       <view class="section-title">
-        处理结果
-      </view><view class="long-text">
-        {{ item.resolution_content }}
+        联系信息
       </view>
-    </view>
-    <view v-if="item.close_reason" class="section">
-      <view class="section-title">
-        关闭说明
-      </view><view class="long-text">
-        {{ item.close_reason }}
-      </view>
-    </view>
-    <view class="timeline">
-      <view>提交时间 {{ formatComplaintTime(item.created_at) }}</view>
-      <view v-if="item.accepted_at">
-        受理时间 {{ formatComplaintTime(item.accepted_at) }}
-      </view>
-      <view v-if="item.resolved_at">
-        处理时间 {{ formatComplaintTime(item.resolved_at) }}
-      </view>
-      <view v-if="item.closed_at">
-        关闭时间 {{ formatComplaintTime(item.closed_at) }}
+      <view class="contact-lines">
+        <view>{{ item.contact.name }}</view><view v-if="item.contact.mobile">
+          {{ item.contact.mobile }}
+        </view><view v-if="item.contact.email">
+          {{ item.contact.email }}
+        </view>
       </view>
     </view>
   </view>
@@ -78,57 +85,49 @@ defineProps<{ item: Complaint, member?: boolean }>()
 
 <style lang="scss" scoped>
 .content {
-  padding: 32rpx 26rpx;
-  background: #fff;
-  border: 1px solid #dbe4df;
-  border-radius: 8px;
+  width: 100%;
 }
 .heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 18rpx;
+  margin-top: 38rpx;
 }
 .title {
   min-width: 0;
   color: #17211c;
-  font-size: 38rpx;
+  font-size: 36rpx;
   font-weight: 700;
   overflow-wrap: anywhere;
 }
 .ticket {
-  margin-top: 12rpx;
-  color: #69716c;
-  font-size: 23rpx;
-}
-.contact {
-  margin-top: 24rpx;
-  padding: 20rpx;
-  background: #f4f6f3;
-  color: #4c5651;
-  font-size: 24rpx;
-  line-height: 1.7;
+  margin-top: 10rpx;
+  color: var(--lx-color-text-tertiary);
+  font-size: 22rpx;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
 }
 .section {
-  margin-top: 34rpx;
+  margin-top: 38rpx;
 }
 .section-title {
-  color: #25302a;
-  font-size: 29rpx;
+  color: var(--lx-color-text-main);
+  font-size: 28rpx;
   font-weight: 650;
 }
 .long-text {
-  margin-top: 14rpx;
-  color: #434d48;
-  font-size: 27rpx;
-  line-height: 1.8;
+  margin-top: 13rpx;
+  color: var(--lx-color-text-secondary);
+  font-size: 26rpx;
+  line-height: 1.78;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
 .resolution {
   padding: 24rpx;
-  background: #edf6f2;
-  border-left: 4px solid #23744f;
+  background: var(--lx-color-surface-lake);
+  border-left: 4rpx solid var(--lx-color-status-success);
+}
+.target-section {
+  padding-top: 24rpx;
+  border-top: 1px solid var(--lx-color-border);
 }
 .evidence {
   display: grid;
@@ -141,12 +140,15 @@ defineProps<{ item: Complaint, member?: boolean }>()
   aspect-ratio: 1;
   border-radius: 6px;
 }
-.timeline {
-  margin-top: 28rpx;
-  padding-top: 22rpx;
-  border-top: 1px solid #e6ece8;
-  color: #77807b;
-  font-size: 22rpx;
-  line-height: 1.8;
+.contact {
+  padding-top: 24rpx;
+  border-top: 1px solid var(--lx-color-border);
+}
+.contact-lines {
+  margin-top: 12rpx;
+  color: var(--lx-color-text-secondary);
+  font-size: 24rpx;
+  line-height: 1.75;
+  overflow-wrap: anywhere;
 }
 </style>

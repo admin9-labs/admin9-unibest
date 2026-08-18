@@ -14,7 +14,7 @@ describe('consultation API adapter', () => {
   it('keeps guest credentials in request bodies and uses public auth', async () => {
     mocks.guestCreate.mockResolvedValue({ data: { consultation: { ticket_no: 'ZX-1' }, query_credential: 'a'.repeat(64), query_credential_expires_at: '2026-09-12' } })
     mocks.guestQuery.mockResolvedValue({ data: { consultation: { ticket_no: 'ZX-1' } } })
-    const input = { category_code: 'travel-consultation', contact_name: '游客', contact_mobile: '13800138000', subject: '路线咨询', content: '咨询内容' }
+    const input = { category_id: 11, contact_name: '游客', contact_mobile: '13800138000', subject: '路线咨询', content: '咨询内容' }
 
     await createGuestConsultation(input)
     await queryGuestConsultation('ZX-1', 'a'.repeat(64))

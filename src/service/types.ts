@@ -3,7 +3,7 @@
 
 export type AiChatResource = {
   assistant: {
-    code: string;
+    id: number;
     name: string;
   };
   answer: string;
@@ -13,14 +13,14 @@ export type AiChatResource = {
 };
 
 export type AiFeedbackCategoryResource = {
-  code: string;
+  id: number;
   name: string;
 };
 
 export type AiFeedbackReceiptResource = {
   accepted: boolean;
   rating: 'helpful' | 'unhelpful';
-  category_code: string;
+  category_id: number;
 };
 
 export type ArticleRelationLinkResource = {
@@ -32,13 +32,13 @@ export type ArticleRelationLinkResource = {
     | 'accommodation';
   position: number;
   target: {
-    code: string;
+    id: number;
     name: string;
   };
 };
 
 export type AudioGuidePlaybackResource = {
-  code: string;
+  id: number;
   title: string;
   summary: string | null;
   script: string | null;
@@ -49,7 +49,7 @@ export type AudioGuidePlaybackResource = {
   };
   target_type: 'attraction' | 'scenic_spot' | 'travel_route';
   target: {
-    code: string;
+    id: number;
     name: string;
   };
 };
@@ -248,7 +248,7 @@ export type ChangePasswordRequest = {
 };
 
 export type ComplaintCategoryResource = {
-  code: string;
+  id: number;
   name: string;
 };
 
@@ -262,7 +262,7 @@ export type ComplaintEvidenceResource = {
 export type ComplaintProgressResource = {
   ticket_no: string;
   category: {
-    code: string;
+    id: number;
     name: string;
   } | null;
   target_type: string | null;
@@ -413,14 +413,14 @@ export type ComplaintsUsingPostResponses = {
 };
 
 export type ConsultationCategoryResource = {
-  code: string;
+  id: number;
   name: string;
 };
 
 export type ConsultationProgressResource = {
   ticket_no: string;
   category: {
-    code: string;
+    id: number;
     name: string;
   } | null;
   subject: string;
@@ -568,12 +568,12 @@ export type ConsultationsUsingPostResponses = {
 };
 
 export type DiningPlaceResource = {
-  code: string;
+  id: number;
   name: string;
   summary: string | null;
   description: string | null;
   category: {
-    code: string;
+    id: number;
     name: string;
   } | null;
   address: string | null;
@@ -594,22 +594,22 @@ export type DiningPlaceResource = {
   average_price: number | null;
   signature_dishes: string[] | null;
   attraction?: {
-    code: string;
+    id: number;
     name: string;
   } | null;
   scenic_spot?: {
-    code: string;
+    id: number;
     name: string;
   } | null;
 };
 
 export type LodgingPlaceResource = {
-  code: string;
+  id: number;
   name: string;
   summary: string | null;
   description: string | null;
   category: {
-    code: string;
+    id: number;
     name: string;
   } | null;
   address: string | null;
@@ -631,11 +631,11 @@ export type LodgingPlaceResource = {
   reference_price: number | null;
   facilities: string[] | null;
   attraction?: {
-    code: string;
+    id: number;
     name: string;
   } | null;
   scenic_spot?: {
-    code: string;
+    id: number;
     name: string;
   } | null;
 };
@@ -662,7 +662,8 @@ export enum Node_typeEnum {
 export type INode_typeEnum = keyof typeof Node_typeEnum;
 
 export type PublicAccommodationsAccommodationUsingGetParams = {
-  accommodation: string;
+  /** The accommodation ID */
+  accommodation: number;
 };
 
 export type PublicAccommodationsAccommodationUsingGetResponse = {
@@ -698,7 +699,7 @@ export type PublicAccommodationsUsingGetParams = {
   page?: number;
   page_size?: number;
   keyword?: string | null;
-  category_code?: string | null;
+  category_id?: number | null;
 };
 
 export type PublicAccommodationsUsingGetResponse = {
@@ -744,14 +745,14 @@ export type PublicAccommodationsUsingGetResponses = {
 };
 
 export type PublicAiAssistantResource = {
-  code: string;
+  id: number;
   name: string;
   description: string | null;
   welcome_message: string;
 };
 
 export type PublicAiAssistantsAiAssistantChatStreamUsingPostParams = {
-  aiAssistant: string;
+  aiAssistant: string | number;
 };
 
 export type PublicAiAssistantsAiAssistantChatStreamUsingPostResponses = {
@@ -817,7 +818,7 @@ export type PublicAiAssistantsAiAssistantChatStreamUsingPostResponses = {
 };
 
 export type PublicAiAssistantsAiAssistantChatUsingPostParams = {
-  aiAssistant: string;
+  aiAssistant: string | number;
 };
 
 export type PublicAiAssistantsAiAssistantChatUsingPostResponse = {
@@ -870,7 +871,7 @@ export type PublicAiAssistantsAiAssistantChatUsingPostResponses = {
 };
 
 export type PublicAiAssistantsAiAssistantUsingGetParams = {
-  aiAssistant: string;
+  aiAssistant: string | number;
 };
 
 export type PublicAiAssistantsAiAssistantUsingGetResponse = {
@@ -996,7 +997,8 @@ export type PublicAiFeedbackUsingPostResponses = {
 };
 
 export type PublicArticlesArticleUsingGetParams = {
-  article: string;
+  /** The article ID */
+  article: number;
 };
 
 export type PublicArticlesArticleUsingGetResponse = {
@@ -1032,7 +1034,7 @@ export type PublicArticlesUsingGetParams = {
   page?: number;
   page_size?: number;
   keyword?: string | null;
-  category_code?: string | null;
+  category_id?: number | null;
   is_recommended?: boolean;
 };
 
@@ -1079,7 +1081,8 @@ export type PublicArticlesUsingGetResponses = {
 };
 
 export type PublicAttractionsAttractionUsingGetParams = {
-  attraction: string;
+  /** The attraction ID */
+  attraction: number;
 };
 
 export type PublicAttractionsAttractionUsingGetResponse = {
@@ -1161,7 +1164,8 @@ export type PublicAttractionsUsingGetResponses = {
 };
 
 export type PublicAudioGuidesAudioGuideUsingGetParams = {
-  audioGuide: string;
+  /** The audio guide ID */
+  audioGuide: number;
 };
 
 export type PublicAudioGuidesAudioGuideUsingGetResponse = {
@@ -1198,7 +1202,7 @@ export type PublicAudioGuidesUsingGetParams = {
   page_size?: number;
   keyword?: string | null;
   target_type?: 'attraction' | 'scenic_spot' | 'travel_route' | null;
-  target_code?: string | null;
+  target_id?: number | null;
 };
 
 export type PublicAudioGuidesUsingGetResponse = {
@@ -1481,7 +1485,8 @@ export type PublicConsultationsUsingPostResponses = {
 };
 
 export type PublicRestaurantsRestaurantUsingGetParams = {
-  restaurant: string;
+  /** The restaurant ID */
+  restaurant: number;
 };
 
 export type PublicRestaurantsRestaurantUsingGetResponse = {
@@ -1517,7 +1522,7 @@ export type PublicRestaurantsUsingGetParams = {
   page?: number;
   page_size?: number;
   keyword?: string | null;
-  category_code?: string | null;
+  category_id?: number | null;
 };
 
 export type PublicRestaurantsUsingGetResponse = {
@@ -1563,7 +1568,8 @@ export type PublicRestaurantsUsingGetResponses = {
 };
 
 export type PublicScenicSpotsScenicSpotUsingGetParams = {
-  scenicSpot: string;
+  /** The scenic spot ID */
+  scenicSpot: number;
 };
 
 export type PublicScenicSpotsScenicSpotUsingGetResponse = {
@@ -1645,7 +1651,8 @@ export type PublicScenicSpotsUsingGetResponses = {
 };
 
 export type PublicServiceInformationServiceInformationUsingGetParams = {
-  serviceInformation: string;
+  /** The service information ID */
+  serviceInformation: number;
 };
 
 export type PublicServiceInformationServiceInformationUsingGetResponse = {
@@ -1681,7 +1688,7 @@ export type PublicServiceInformationUsingGetParams = {
   page?: number;
   page_size?: number;
   keyword?: string | null;
-  type_code?: string | null;
+  type_id?: number | null;
 };
 
 export type PublicServiceInformationUsingGetResponse = {
@@ -1727,7 +1734,8 @@ export type PublicServiceInformationUsingGetResponses = {
 };
 
 export type PublicTravelRoutesTravelRouteUsingGetParams = {
-  travelRoute: string;
+  /** The travel route ID */
+  travelRoute: number;
 };
 
 export type PublicTravelRoutesTravelRouteUsingGetResponse = {
@@ -1809,13 +1817,14 @@ export type PublicTravelRoutesUsingGetResponses = {
 };
 
 export type PublishedContentResource = {
-  code: string;
+  id: number;
   title: string;
   subtitle: string | null;
   summary: string | null;
+  /** Sanitized limited HTML. Supports paragraphs, line breaks, headings, emphasis, lists, blockquotes, links, images, video, and audio. Media never autoplays. */
   content: string;
   category: {
-    code: string;
+    id: number;
     name: string;
   } | null;
   cover: {
@@ -1886,7 +1895,7 @@ export type StoreComplaintEvidenceRequest = {
 };
 
 export type StoreComplaintRequest = {
-  category_code: string;
+  category_id: number;
   contact_name: string;
   contact_mobile?: string | null;
   contact_email?: string | null;
@@ -1895,13 +1904,13 @@ export type StoreComplaintRequest = {
   title: string;
   content: string;
   evidence?: {
-    media_id: number;
+    file_id: number;
     upload_token: string;
   }[];
 };
 
 export type StoreConsultationRequest = {
-  category_code: string;
+  category_id: number;
   contact_name: string;
   contact_mobile?: string | null;
   contact_email?: string | null;
@@ -1912,7 +1921,7 @@ export type StoreConsultationRequest = {
 export type SubmitPublicAiFeedbackRequest = {
   message_reference: string;
   rating: 'helpful' | 'unhelpful';
-  category_code: string;
+  category_id: number;
 };
 
 export enum Target_typeEnum {
@@ -1924,7 +1933,7 @@ export enum Target_typeEnum {
 export type ITarget_typeEnum = keyof typeof Target_typeEnum;
 
 export type TourismAreaResource = {
-  code: string;
+  id: number;
   name: string;
   summary: string | null;
   description: string | null;
@@ -1943,7 +1952,7 @@ export type TourismAreaResource = {
 };
 
 export type TourismDestinationResource = {
-  code: string;
+  id: number;
   name: string;
   summary: string | null;
   description: string | null;
@@ -1968,7 +1977,7 @@ export type TourismRouteNodeResource = {
 };
 
 export type TourismRouteResource = {
-  code: string;
+  id: number;
   name: string;
   summary: string | null;
   description: string | null;
@@ -1982,10 +1991,10 @@ export type TourismRouteResource = {
 };
 
 export type VisitorServiceResource = {
-  code: string;
+  id: number;
   title: string;
   type: {
-    code: string;
+    id: number;
     name: string;
   } | null;
   provider: string | null;

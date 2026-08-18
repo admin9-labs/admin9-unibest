@@ -1,21 +1,85 @@
-// 测试用的 iconfont，可生效
-// @import './iconfont.css';
-
-.test {
-  // 可以通过 @apply 多个样式封装整体样式
-  @apply mt-4 ml-4;
-
-  padding-top: 4px;
-  color: red;
-}
-
 :root,
 page {
-  // 修改按主题色
-  // --wot-primary-6: #37c2bc;
+  --lx-color-primary: #0b7f86;
+  --lx-color-primary-strong: #08666d;
+  --lx-color-secondary: #26705c;
+  --lx-color-accent: #c58a1f;
+  --lx-color-text-main: #14211f;
+  --lx-color-text-secondary: #4e605d;
+  --lx-color-text-tertiary: #74817f;
+  --lx-color-surface: #fff;
+  --lx-color-surface-muted: #f4f7f6;
+  --lx-color-surface-pressed: #eaf2f0;
+  --lx-color-surface-lake: #e8f3f3;
+  --lx-color-surface-warm: #fff7e4;
+  --lx-color-border: #d9e3e1;
+  --lx-color-border-strong: #bfcdca;
+  --lx-color-status-info: #0b7285;
+  --lx-color-status-success: #26705c;
+  --lx-color-status-warning: #9a6814;
+  --lx-color-status-danger: #9b4b46;
+  --lx-font-display: 44rpx;
+  --lx-font-title: 34rpx;
+  --lx-font-section: 30rpx;
+  --lx-font-body: 27rpx;
+  --lx-font-meta: 23rpx;
+  --lx-line-body: 1.7;
+  --lx-space-page: 28rpx;
+  --lx-space-section: 48rpx;
+  --lx-space-block: 28rpx;
+  --lx-radius-card: 8px;
+  --lx-radius-media: 6px;
+  --lx-page-max: 1040rpx;
+  --lx-shadow-card: 0 6rpx 18rpx rgb(18 52 52 / 5%);
+  --wot-primary-1: #e5f4f5;
+  --wot-primary-2: #c2e5e7;
+  --wot-primary-3: #8fcdd1;
+  --wot-primary-4: #55afb5;
+  --wot-primary-5: #258e95;
+  --wot-primary-6: #0b7f86;
+  --wot-primary-7: #08666d;
 
-  // 修改按钮背景色
-  // --wot-button-primary-bg: green;
+  color: var(--lx-color-text-main);
+  background: var(--lx-color-surface-muted);
+  font-family: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+}
+
+.lx-page-shell {
+  width: 100%;
+  max-width: var(--lx-page-max);
+  margin: 0 auto;
+  padding-right: var(--lx-space-page);
+  padding-left: var(--lx-space-page);
+  box-sizing: border-box;
+}
+
+.lx-section-title {
+  color: var(--lx-color-text-main);
+  font-size: var(--lx-font-section);
+  font-weight: 650;
+  line-height: 1.4;
+}
+
+.lx-body-copy {
+  color: var(--lx-color-text-secondary);
+  font-size: var(--lx-font-body);
+  line-height: var(--lx-line-body);
+  overflow-wrap: anywhere;
+}
+
+.lx-meta-copy {
+  color: var(--lx-color-text-tertiary);
+  font-size: var(--lx-font-meta);
+  line-height: 1.55;
+}
+
+@media (min-width: 760px) {
+  :root,
+  page {
+    --lx-space-page: 36px;
+    --lx-space-section: 56px;
+    --lx-page-max: 760px;
+  }
 }
 
 /*

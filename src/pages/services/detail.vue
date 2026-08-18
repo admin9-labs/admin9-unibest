@@ -4,19 +4,21 @@ import type { HttpError } from '@/http/types'
 import { computed, ref } from 'vue'
 import { getServiceInformationDetail } from '@/api/service-information'
 import PublicContentBody from '@/components/PublicContentBody.vue'
+import PublicDetailCover from '@/components/PublicDetailCover.vue'
+import PublicDetailHeading from '@/components/PublicDetailHeading.vue'
 import { openExternalLink } from '@/utils/external-link'
 
 defineOptions({ name: 'ServiceInformationDetail' })
 definePage({ style: { navigationBarTitleText: '服务详情' } })
-const code = ref('')
+const id = ref<number | null>(null)
 const item = ref<ServiceInformation | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
 const failed = ref(false)
-const hasLocation = computed(() => item.value?.latitude !== null && item.value?.longitude !== null)
+const hasLocation = computed(() => Boolean(item.value && item.value.latitude !== null && item.value.longitude !== null))
 
 async function load() {
-  if (!code.value) {
+  if (id.value === null) {
     loading.value = false
     notFound.value = true
     return
@@ -25,7 +27,7 @@ async function load() {
   failed.value = false
   notFound.value = false
   try {
-    item.value = await getServiceInformationDetail(code.value)
+    item.value = await getServiceInformationDetail(id.value)
   }
   catch (error) {
     notFound.value = (error as HttpError).statusCode === 404
@@ -48,7 +50,8 @@ function openLocation() {
   uni.openLocation({ latitude: item.value.latitude, longitude: item.value.longitude, name: item.value.title, address: item.value.address ?? '' })
 }
 onLoad((query) => {
-  code.value = typeof query?.code === 'string' ? decodeURIComponent(query.code) : ''
+  const parsed = Number(query?.id)
+  id.value = Number.isInteger(parsed) && parsed > 0 ? parsed : null
   load()
 })
 </script>
@@ -77,21 +80,13 @@ onLoad((query) => {
       </wd-empty>
     </view>
     <template v-else-if="item">
-      <wd-img v-if="item.cover?.url" :src="item.cover.url" width="100%" height="420rpx" mode="aspectFill" radius="0" enable-preview />
-      <view v-else class="hero-placeholder">
-        <wd-icon name="service" size="40" /><text>游客服务</text>
-      </view>
+      <PublicDetailCover :src="item.cover?.url" height="420rpx" />
       <view class="content">
-        <view class="heading">
-          <view class="title">
-            {{ item.title }}
-          </view><wd-tag v-if="item.type" type="success" variant="light">
-            {{ item.type.name }}
-          </wd-tag>
-        </view>
-        <view v-if="item.summary" class="summary">
-          {{ item.summary }}
-        </view>
+        <PublicDetailHeading :title="item.title" :summary="item.summary">
+          <template v-if="item.type" #badge>
+            <text class="detail-category">{{ item.type.name }}</text>
+          </template>
+        </PublicDetailHeading>
         <view class="facts">
           <view v-if="item.provider" class="fact">
             <wd-icon name="user" size="18" /><text>{{ item.provider }}</text>
@@ -100,16 +95,16 @@ onLoad((query) => {
             <wd-icon name="location" size="18" /><text>服务区域：{{ item.service_area }}</text>
           </view>
           <view v-if="item.address" class="fact">
-            <wd-icon name="pin" size="18" /><text>{{ item.address }}</text>
+            <wd-icon name="pushpin" size="18" /><text>{{ item.address }}</text>
           </view>
           <view v-if="item.service_hours" class="fact">
-            <wd-icon name="time" size="18" /><text>{{ item.service_hours }}</text>
+            <wd-icon name="clock-circle" size="18" /><text>{{ item.service_hours }}</text>
           </view>
           <view v-if="item.phone" class="fact action" role="button" @click="callPhone">
             <wd-icon name="phone" size="18" /><text>{{ item.phone }}</text>
           </view>
           <view v-if="hasLocation" class="fact action" role="button" @click="openLocation">
-            <wd-icon name="navigation" size="18" /><text>打开地图导航</text>
+            <wd-icon name="compass" size="18" /><text>打开地图导航</text>
           </view>
         </view>
         <PublicContentBody title="服务说明" :content="item.content" />
@@ -131,7 +126,7 @@ onLoad((query) => {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6f3;
+  background: var(--lx-color-surface-muted);
 }
 .state {
   display: flex;
@@ -140,90 +135,80 @@ onLoad((query) => {
   justify-content: center;
   padding: 28rpx;
 }
-.hero-placeholder {
-  display: flex;
-  height: 420rpx;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14rpx;
-  color: #246b61;
-  background: #e1ece8;
-  font-size: 24rpx;
-}
 .content {
-  padding: 36rpx 28rpx 72rpx;
+  width: 100%;
+  max-width: 960rpx;
+  margin: 0 auto;
+  padding: 36rpx 28rpx calc(72rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
 }
-.heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20rpx;
-}
-.title {
-  min-width: 0;
-  color: #17211c;
-  font-size: 44rpx;
-  font-weight: 700;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-}
-.summary {
-  margin-top: 18rpx;
-  color: #515b56;
-  font-size: 28rpx;
-  line-height: 1.7;
+.detail-category {
+  color: var(--lx-color-text-tertiary);
+  font-size: 23rpx;
+  line-height: 1.5;
 }
 .facts {
   margin-top: 32rpx;
   padding: 8rpx 24rpx;
-  background: #fff;
-  border: 1px solid #dbe4df;
-  border-radius: 8px;
+  background: var(--lx-color-surface);
+  border: 1px solid var(--lx-color-border);
+  border-radius: var(--lx-radius-card);
+  box-shadow: var(--lx-shadow-card);
 }
 .fact {
   display: flex;
+  min-width: 0;
   align-items: flex-start;
   gap: 16rpx;
   padding: 22rpx 0;
-  color: #3f4944;
+  color: var(--lx-color-text-secondary);
   font-size: 26rpx;
   line-height: 1.5;
 }
+.fact text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .fact + .fact {
-  border-top: 1px solid #e6ece8;
+  border-top: 1px solid var(--lx-color-border);
 }
 .fact.action {
-  color: #246b61;
+  color: var(--lx-color-primary-strong);
 }
 .section {
   margin-top: 40rpx;
 }
 .section-title {
-  color: #25302a;
+  color: var(--lx-color-text-main);
   font-size: 31rpx;
   font-weight: 650;
 }
 .attachment-list {
   margin-top: 18rpx;
   overflow: hidden;
-  background: #fff;
-  border: 1px solid #dbe4df;
-  border-radius: 8px;
+  background: var(--lx-color-surface);
+  border: 1px solid var(--lx-color-border);
+  border-radius: var(--lx-radius-card);
+  box-shadow: var(--lx-shadow-card);
 }
 .attachment {
   display: flex;
+  min-width: 0;
   min-height: 96rpx;
   align-items: center;
   justify-content: space-between;
   gap: 18rpx;
   padding: 20rpx 24rpx;
-  color: #246b61;
+  color: var(--lx-color-primary-strong);
   font-size: 27rpx;
   box-sizing: border-box;
   overflow-wrap: anywhere;
 }
+.attachment text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .attachment + .attachment {
-  border-top: 1px solid #e6ece8;
+  border-top: 1px solid var(--lx-color-border);
 }
 </style>

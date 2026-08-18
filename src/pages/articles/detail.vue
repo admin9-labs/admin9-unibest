@@ -3,16 +3,17 @@ import type { Article } from '@/api/articles'
 import type { HttpError } from '@/http/types'
 import { ref } from 'vue'
 import { getArticle } from '@/api/articles'
+import PublicDetailCover from '@/components/PublicDetailCover.vue'
 
 defineOptions({ name: 'ArticleDetail' })
 definePage({ style: { navigationBarTitleText: '文章详情' } })
-const code = ref('')
+const id = ref<number | null>(null)
 const article = ref<Article | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
 const failed = ref(false)
 async function load() {
-  if (!code.value) {
+  if (id.value === null) {
     loading.value = false
     notFound.value = true
     return
@@ -20,7 +21,7 @@ async function load() {
   loading.value = true
   failed.value = false
   try {
-    article.value = await getArticle(code.value)
+    article.value = await getArticle(id.value)
   }
   catch (error) {
     notFound.value = (error as HttpError).statusCode === 404
@@ -35,10 +36,11 @@ function returnToList() {
 }
 function openRelation(relation: NonNullable<Article['relations']>[number]) {
   const paths = { attraction: 'attractions', scenic_spot: 'scenic-spots', travel_route: 'travel-routes', restaurant: 'restaurants', accommodation: 'accommodations' }
-  uni.navigateTo({ url: `/pages/${paths[relation.relation_type]}/detail?code=${encodeURIComponent(relation.target.code)}` })
+  uni.navigateTo({ url: `/pages/${paths[relation.relation_type]}/detail?id=${relation.target.id}` })
 }
 onLoad((query) => {
-  code.value = typeof query?.code === 'string' ? decodeURIComponent(query.code) : ''
+  const value = Number(query?.id)
+  id.value = Number.isInteger(value) && value > 0 ? value : null
   load()
 })
 </script>
@@ -67,21 +69,26 @@ onLoad((query) => {
       </wd-empty>
     </view>
     <article v-else-if="article" class="content">
-      <text class="category">{{ article.category?.name || '文章' }}</text><view class="title">
+      <text v-if="article.category" class="category">{{ article.category.name }}</text>
+      <view class="title">
         {{ article.title }}
       </view><view v-if="article.subtitle" class="subtitle">
         {{ article.subtitle }}
       </view>
-      <view class="byline">
+      <view v-if="article.author || article.source" class="byline">
         <text v-if="article.author">{{ article.author }}</text><text v-if="article.source">{{ article.source }}</text>
       </view>
-      <wd-img v-if="article.cover?.url" :src="article.cover.url" width="100%" height="380rpx" mode="aspectFill" radius="8" enable-preview />
+      <view v-if="article.cover?.url" class="cover-wrap">
+        <PublicDetailCover :src="article.cover.url" height="380rpx" />
+      </view>
       <rich-text class="rich-content" :nodes="article.content" />
       <view v-if="article.relations?.length" class="related">
         <view class="section-title">
           相关内容
-        </view><view v-for="relation in article.relations" :key="`${relation.relation_type}-${relation.target.code}`" class="related-item" role="link" @click="openRelation(relation)">
-          <text>{{ relation.target.name }}</text><wd-icon name="arrow-right" size="18" />
+        </view><view class="related-list">
+          <view v-for="relation in article.relations" :key="`${relation.relation_type}-${relation.target.id}`" class="related-item" role="link" @click="openRelation(relation)">
+            <text>{{ relation.target.name }}</text><wd-icon name="arrow-right" size="18" color="var(--lx-color-text-tertiary)" />
+          </view>
         </view>
       </view>
     </article>
@@ -91,71 +98,109 @@ onLoad((query) => {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6f3;
+  background: var(--lx-color-surface-muted);
 }
 .state {
   display: flex;
   min-height: 78vh;
   align-items: center;
   justify-content: center;
-  padding: 28rpx;
+  padding: 28rpx 28rpx calc(28rpx + env(safe-area-inset-bottom));
 }
 .content {
   display: block;
-  padding: 52rpx 28rpx 80rpx;
+  width: 100%;
+  max-width: 960rpx;
+  margin: 0 auto;
+  padding: 44rpx 28rpx calc(80rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
 }
 .category {
-  color: #34765b;
+  display: block;
+  color: var(--lx-color-text-tertiary);
   font-size: 23rpx;
-  font-weight: 600;
 }
 .title {
-  margin-top: 14rpx;
-  color: #17211c;
-  font-size: 46rpx;
+  margin-top: 18rpx;
+  color: var(--lx-color-text-main);
+  font-size: 44rpx;
   font-weight: 700;
   line-height: 1.35;
   overflow-wrap: anywhere;
 }
 .subtitle {
   margin-top: 14rpx;
-  color: #59635e;
+  color: var(--lx-color-text-secondary);
   font-size: 28rpx;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
 }
 .byline {
   display: flex;
+  flex-wrap: wrap;
   gap: 20rpx;
-  margin: 22rpx 0 30rpx;
-  color: #818983;
+  margin-top: 22rpx;
+  color: var(--lx-color-text-tertiary);
   font-size: 23rpx;
+}
+.byline text + text::before {
+  margin-right: 20rpx;
+  color: var(--lx-color-border);
+  content: '|';
+}
+.cover-wrap {
+  margin-top: 30rpx;
+  overflow: hidden;
+  border-radius: var(--lx-radius-card);
 }
 .rich-content {
   display: block;
   margin-top: 32rpx;
-  color: #343d38;
+  color: var(--lx-color-text-main);
   font-size: 29rpx;
   line-height: 1.9;
   overflow-wrap: anywhere;
+}
+:global(.rich-content img) {
+  display: block;
+  width: auto !important;
+  max-width: 100% !important;
+  height: auto !important;
+  margin: 24rpx auto;
+  border-radius: 8px;
 }
 .related {
   margin-top: 48rpx;
 }
 .section-title {
-  color: #25302a;
+  color: var(--lx-color-text-main);
   font-size: 31rpx;
   font-weight: 650;
+}
+.related-list {
+  margin-top: 18rpx;
+  overflow: hidden;
+  background: var(--lx-color-surface);
+  border: 1px solid var(--lx-color-border);
+  border-radius: var(--lx-radius-card);
+  box-shadow: var(--lx-shadow-card);
 }
 .related-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 18rpx;
   min-height: 92rpx;
-  margin-top: 16rpx;
   padding: 0 24rpx;
-  background: #fff;
-  border: 1px solid #dfe5e0;
-  border-radius: 8px;
-  color: #25302a;
+  color: var(--lx-color-text-main);
   font-size: 27rpx;
+}
+.related-item + .related-item {
+  border-top: 1px solid var(--lx-color-border);
+}
+.related-item text {
+  min-width: 0;
+  flex: 1;
+  overflow-wrap: anywhere;
 }
 </style>

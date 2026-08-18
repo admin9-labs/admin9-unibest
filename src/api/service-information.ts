@@ -11,9 +11,9 @@ export async function getServiceInformation(keyword = '') {
   return response.data as ServiceInformation[]
 }
 
-export async function getServiceInformationDetail(code: string) {
+export async function getServiceInformationDetail(id: number) {
   const response = await publicServiceInformationServiceInformationUsingGet({
-    params: { serviceInformation: code },
+    params: { serviceInformation: id },
     options: { auth: 'public', hideErrorToast: true },
   })
   return response.data.service_information as ServiceInformation

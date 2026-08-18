@@ -4,19 +4,21 @@ import type { HttpError } from '@/http/types'
 import { computed, ref } from 'vue'
 import { getAccommodation } from '@/api/accommodations'
 import PublicContentBody from '@/components/PublicContentBody.vue'
+import PublicDetailCover from '@/components/PublicDetailCover.vue'
+import PublicDetailHeading from '@/components/PublicDetailHeading.vue'
 
 defineOptions({ name: 'AccommodationDetail' })
 definePage({ style: { navigationBarTitleText: '住宿详情' } })
-const code = ref('')
+const id = ref<number | null>(null)
 const item = ref<Accommodation | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
 const failed = ref(false)
 const gallery = computed(() => item.value?.gallery?.map(image => image.url) ?? [])
-const hasLocation = computed(() => item.value?.latitude !== null && item.value?.longitude !== null)
+const hasLocation = computed(() => Boolean(item.value && item.value.latitude !== null && item.value.longitude !== null))
 
 async function load() {
-  if (!code.value) {
+  if (id.value === null) {
     loading.value = false
     notFound.value = true
     return
@@ -25,7 +27,7 @@ async function load() {
   failed.value = false
   notFound.value = false
   try {
-    item.value = await getAccommodation(code.value)
+    item.value = await getAccommodation(id.value)
   }
   catch (error) {
     notFound.value = (error as HttpError).statusCode === 404
@@ -48,11 +50,17 @@ function openLocation() {
     return
   uni.openLocation({ latitude: lodging.latitude, longitude: lodging.longitude, name: lodging.name, address: lodging.address ?? '' })
 }
-function openRelated(type: 'attraction' | 'scenic-spot', target: { code: string }) {
-  uni.navigateTo({ url: `/pages/${type === 'attraction' ? 'attractions' : 'scenic-spots'}/detail?code=${encodeURIComponent(target.code)}` })
+function openRelated(type: 'attraction' | 'scenic-spot', target: { id: number }) {
+  uni.navigateTo({ url: `/pages/${type === 'attraction' ? 'attractions' : 'scenic-spots'}/detail?id=${target.id}` })
+}
+function previewGallery(event: { index: number }) {
+  const current = gallery.value[event.index]
+  if (current)
+    uni.previewImage({ current, urls: gallery.value })
 }
 onLoad((query) => {
-  code.value = typeof query?.code === 'string' ? decodeURIComponent(query.code) : ''
+  const parsed = Number(query?.id)
+  id.value = Number.isInteger(parsed) && parsed > 0 ? parsed : null
   load()
 })
 </script>
@@ -81,36 +89,28 @@ onLoad((query) => {
       </wd-empty>
     </view>
     <template v-else-if="item">
-      <wd-img v-if="item.cover?.url" :src="item.cover.url" width="100%" height="440rpx" mode="aspectFill" radius="0" enable-preview />
-      <view v-else class="hero-placeholder">
-        <wd-icon name="home" size="40" /><text>旅居西昌</text>
-      </view>
+      <PublicDetailCover :src="item.cover?.url" />
       <view class="content">
-        <view class="heading">
-          <view class="title">
-            {{ item.name }}
-          </view><wd-tag v-if="item.category" type="lightblue" variant="light">
-            {{ item.category.name }}
-          </wd-tag>
-        </view>
-        <view v-if="item.summary" class="summary">
-          {{ item.summary }}
-        </view>
+        <PublicDetailHeading :title="item.name" :summary="item.summary">
+          <template v-if="item.category" #badge>
+            <text class="detail-category">{{ item.category.name }}</text>
+          </template>
+        </PublicDetailHeading>
         <view class="facts">
           <view v-if="item.address" class="fact">
             <wd-icon name="location" size="18" /><text>{{ item.address }}</text>
           </view>
           <view v-if="item.check_in_time || item.check_out_time" class="fact">
-            <wd-icon name="time" size="18" /><text>入住 {{ item.check_in_time || '以现场为准' }} · 退房 {{ item.check_out_time || '以现场为准' }}</text>
+            <wd-icon name="clock-circle" size="18" /><text>入住 {{ item.check_in_time || '以现场为准' }} · 退房 {{ item.check_out_time || '以现场为准' }}</text>
           </view>
           <view v-if="item.reference_price !== null" class="fact">
-            <wd-icon name="money-circle" size="18" /><text>参考价 ¥{{ item.reference_price }} 起</text>
+            <wd-icon name="tag" size="18" /><text>参考价 ¥{{ item.reference_price }} 起</text>
           </view>
           <view v-if="item.phone" class="fact action" role="button" @click="callPhone">
             <wd-icon name="phone" size="18" /><text>{{ item.phone }}</text>
           </view>
           <view v-if="hasLocation" class="fact action" role="button" @click="openLocation">
-            <wd-icon name="navigation" size="18" /><text>打开地图导航</text>
+            <wd-icon name="compass" size="18" /><text>打开地图导航</text>
           </view>
         </view>
         <view v-if="item.facilities?.length" class="section">
@@ -126,7 +126,8 @@ onLoad((query) => {
         <view v-if="gallery.length" class="section">
           <view class="section-title">
             住宿相册
-          </view><wd-swiper :list="gallery" height="220" :autoplay="false" radius="8" />
+          </view>
+          <wd-swiper class="gallery" :list="gallery" height="220" :autoplay="false" radius="8" @click="previewGallery" />
         </view>
         <view v-if="item.attraction || item.scenic_spot" class="section">
           <view class="section-title">
@@ -161,7 +162,7 @@ onLoad((query) => {
 <style lang="scss" scoped>
 .page {
   min-height: 100vh;
-  background: #f4f6f3;
+  background: var(--lx-color-surface-muted);
 }
 .state {
   display: flex;
@@ -170,69 +171,57 @@ onLoad((query) => {
   justify-content: center;
   padding: 28rpx;
 }
-.hero-placeholder {
-  display: flex;
-  height: 440rpx;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 14rpx;
-  color: #416a73;
-  background: #dfe9eb;
-  font-size: 24rpx;
-}
 .content {
-  padding: 36rpx 28rpx 72rpx;
+  width: 100%;
+  max-width: 960rpx;
+  margin: 0 auto;
+  padding: 36rpx 28rpx calc(72rpx + env(safe-area-inset-bottom));
+  box-sizing: border-box;
 }
-.heading {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 20rpx;
-}
-.title {
-  min-width: 0;
-  color: #17211c;
-  font-size: 46rpx;
-  font-weight: 700;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-}
-.summary {
-  margin-top: 18rpx;
-  color: #515b56;
-  font-size: 28rpx;
-  line-height: 1.7;
+.detail-category {
+  color: var(--lx-color-text-tertiary);
+  font-size: 23rpx;
+  line-height: 1.5;
 }
 .facts {
   margin-top: 32rpx;
   padding: 8rpx 24rpx;
-  background: #fff;
-  border: 1px solid #dce4e5;
-  border-radius: 8px;
+  background: var(--lx-color-surface);
+  border: 1px solid var(--lx-color-border);
+  border-radius: var(--lx-radius-card);
+  box-shadow: var(--lx-shadow-card);
 }
 .fact {
   display: flex;
+  min-width: 0;
   align-items: flex-start;
   gap: 16rpx;
   padding: 22rpx 0;
-  color: #3f4944;
+  color: var(--lx-color-text-secondary);
   font-size: 26rpx;
   line-height: 1.5;
 }
+.fact text {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
 .fact + .fact {
-  border-top: 1px solid #e8edef;
+  border-top: 1px solid var(--lx-color-border);
 }
 .fact.action {
-  color: #2f6571;
+  color: var(--lx-color-primary-strong);
 }
 .section {
   margin-top: 40rpx;
 }
 .section-title {
-  color: #25302a;
+  color: var(--lx-color-text-main);
   font-size: 31rpx;
   font-weight: 650;
+}
+.gallery {
+  display: block;
+  margin-top: 18rpx;
 }
 .tag-list {
   display: flex;
@@ -243,9 +232,10 @@ onLoad((query) => {
 .related-list {
   margin-top: 18rpx;
   overflow: hidden;
-  background: #fff;
-  border: 1px solid #dce4e5;
-  border-radius: 8px;
+  background: var(--lx-color-surface);
+  border: 1px solid var(--lx-color-border);
+  border-radius: var(--lx-radius-card);
+  box-shadow: var(--lx-shadow-card);
 }
 .related {
   display: flex;
@@ -256,17 +246,21 @@ onLoad((query) => {
   padding: 20rpx 24rpx;
   box-sizing: border-box;
 }
+.related > view {
+  min-width: 0;
+}
 .related + .related {
-  border-top: 1px solid #e8edef;
+  border-top: 1px solid var(--lx-color-border);
 }
 .related-kind {
-  color: #2f6571;
+  color: var(--lx-color-primary-strong);
   font-size: 22rpx;
 }
 .related-name {
   margin-top: 5rpx;
-  color: #25302a;
+  color: var(--lx-color-text-main);
   font-size: 28rpx;
   font-weight: 600;
+  overflow-wrap: anywhere;
 }
 </style>

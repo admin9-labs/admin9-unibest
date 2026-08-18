@@ -25,15 +25,18 @@ function mountPage() {
 
 describe('scenic spot list page', () => {
   it('loads published scenic spots and opens an independent detail URL', async () => {
-    getScenicSpots.mockResolvedValueOnce([{ code: 'qionghai-lushan', name: '邛海泸山景区', summary: '山水相依', address: '西昌市', cover: null }])
+    getScenicSpots.mockResolvedValueOnce([{ id: 201, name: '邛海泸山景区', summary: '山水相依', address: '西昌市', cover: null }])
     const wrapper = mountPage()
     const load = vi.mocked(onLoad).mock.calls.at(-1)?.[0]
     await load?.()
     await flushPromises()
 
     expect(wrapper.text()).toContain('邛海泸山景区')
+    expect(wrapper.text()).toContain('暂无图片')
+    expect(wrapper.text()).not.toContain('山水之间')
+    expect(wrapper.get('.spot').classes()).toContain('destination-item')
     await wrapper.get('.spot').trigger('click')
-    expect(uni.navigateTo).toHaveBeenCalledWith({ url: '/pages/scenic-spots/detail?code=qionghai-lushan' })
+    expect(uni.navigateTo).toHaveBeenCalledWith({ url: '/pages/scenic-spots/detail?id=201' })
   })
 
   it('shows empty and retryable error states', async () => {
@@ -46,6 +49,6 @@ describe('scenic spot list page', () => {
 
     await wrapper.get('button').trigger('click')
     await flushPromises()
-    expect(wrapper.text()).toContain('暂无符合条件的景点')
+    expect(wrapper.text()).toContain('暂时没有可浏览的景点')
   })
 })

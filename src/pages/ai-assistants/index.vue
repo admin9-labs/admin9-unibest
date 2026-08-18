@@ -21,8 +21,8 @@ async function load() {
     loading.value = false
   }
 }
-function open(code: string) {
-  uni.navigateTo({ url: `/pages/ai-assistants/chat?code=${encodeURIComponent(code)}` })
+function open(id: number) {
+  uni.navigateTo({ url: `/pages/ai-assistants/chat?id=${id}` })
 }
 onLoad(load)
 </script>
@@ -53,9 +53,9 @@ onLoad(load)
       <wd-empty tip="当前暂无启用的 AI 文旅助手" />
     </view>
     <view v-else class="list">
-      <view v-for="item in assistants" :key="item.code" class="assistant" role="link" @click="open(item.code)">
+      <view v-for="item in assistants" :key="item.id" class="assistant" role="link" @click="open(item.id)">
         <view class="assistant-icon">
-          <wd-icon name="chat" size="28" />
+          <wd-icon name="robot" size="28" />
         </view>
         <view class="assistant-copy">
           <view class="assistant-name">

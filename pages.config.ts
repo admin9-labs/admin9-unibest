@@ -5,9 +5,9 @@ export default defineUniPages({
   globalStyle: {
     navigationStyle: 'default',
     navigationBarTitleText: 'unibest',
-    navigationBarBackgroundColor: '#f8f8f8',
+    navigationBarBackgroundColor: '#f3f7f7',
     navigationBarTextStyle: 'black',
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#F3F7F7',
   },
   easycom: {
     autoscan: true,
