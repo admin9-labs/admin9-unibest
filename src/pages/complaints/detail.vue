@@ -35,22 +35,14 @@ async function load() {
   }
 }
 onLoad((query) => {
-  ticket.value = typeof query?.ticket === 'string' ? decodeURIComponent(query.ticket) : ''
+  ticket.value
+    = currentH5Ticket()
+      || (typeof query?.ticket === 'string' ? decodeURIComponent(query.ticket) : '')
   load()
 })
 function manualQuery() {
   uni.redirectTo({ url: '/pages/complaints/query' })
 }
-function syncH5Ticket() {
-  const next = currentH5Ticket()
-  if (next === ticket.value)
-    return
-  ticket.value = next
-  item.value = null
-  load()
-}
-onMounted(() => window.addEventListener('hashchange', syncH5Ticket))
-onUnmounted(() => window.removeEventListener('hashchange', syncH5Ticket))
 </script>
 
 <template>

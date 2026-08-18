@@ -30,6 +30,7 @@ import ViteRestart from 'vite-plugin-restart'
 import openDevTools from './scripts/open-dev-tools'
 import vitePluginEruda from './scripts/vite-plugin-eruda'
 import { createCopyNativeResourcesPlugin } from './vite-plugins/copy-native-resources'
+import { h5HistoryRouterPlugin } from './vite-plugins/h5-history-router'
 import syncManifestPlugin from './vite-plugins/sync-manifest-plugins'
 
 // https://vitejs.dev/config/
@@ -61,18 +62,18 @@ export default defineConfig(({ command, mode }) => {
     VITE_SERVER_BASEURL,
     VITE_APP_TITLE,
     VITE_DELETE_CONSOLE,
-    VITE_APP_PUBLIC_BASE,
     VITE_APP_PROXY_ENABLE,
     VITE_APP_PROXY_PREFIX,
     VITE_APP_PROXY_TARGET,
     VITE_COPY_NATIVE_RES_ENABLE,
   } = env
   const { WECHAT_DEVTOOLS_CLI_PATH } = localEnv
+  const isProductionH5Build = UNI_PLATFORM === 'h5' && command === 'build' && mode === 'production'
   console.log('环境变量已加载 -> ', Object.keys(env).sort())
 
   return defineConfig({
     envDir: './env', // 自定义env目录
-    base: VITE_APP_PUBLIC_BASE,
+    base: isProductionH5Build ? '/assets/' : '/',
     plugins: [
       // UniXXX 需要在 Uni 之前引入
       UniLayouts(),
@@ -106,6 +107,8 @@ export default defineConfig(({ command, mode }) => {
         excludePages: ['**/components/**/**.*', '**/sections/**/**.*'],
       }),
       Uni(),
+      // A fresh worktree can expose uni-manifest's default Hash mode before its async config load finishes.
+      h5HistoryRouterPlugin(UNI_PLATFORM),
       {
         // 临时解决 dcloudio 官方的 @dcloudio/uni-mp-compiler 出现的编译 BUG
         // 参考 github issue: https://github.com/dcloudio/uni-app/issues/4952
@@ -199,6 +202,10 @@ export default defineConfig(({ command, mode }) => {
               target: VITE_APP_PROXY_TARGET || 'http://travel.wifixc.test',
               changeOrigin: true,
             },
+            '/storage': {
+              target: VITE_APP_PROXY_TARGET || 'http://travel.wifixc.test',
+              changeOrigin: true,
+            },
           }
         : undefined,
     },
@@ -206,6 +213,7 @@ export default defineConfig(({ command, mode }) => {
       drop: VITE_DELETE_CONSOLE === 'true' ? ['console', 'debugger'] : [],
     },
     build: {
+      assetsDir: isProductionH5Build ? 'h5' : 'assets',
       sourcemap: false,
       // 方便非h5端调试
       // sourcemap: VITE_SHOW_SOURCEMAP === 'true', // 默认是false

@@ -16,7 +16,6 @@ const {
   VITE_APP_TITLE,
   VITE_UNI_APPID,
   VITE_WX_APPID,
-  VITE_APP_PUBLIC_BASE,
   VITE_FALLBACK_LOCALE,
 } = env
 // console.log('manifest.config.ts env:', env)
@@ -31,7 +30,8 @@ export default defineManifestConfig({
   'locale': VITE_FALLBACK_LOCALE, // 'zh-Hans'
   'h5': {
     router: {
-      base: VITE_APP_PUBLIC_BASE,
+      base: '/',
+      mode: 'history',
     },
   },
   /* 5+App特有相关 */

@@ -39,22 +39,13 @@ async function load() {
 }
 onLoad((query) => {
   ticket.value
-    = typeof query?.ticket === 'string' ? decodeURIComponent(query.ticket) : ''
+    = currentH5Ticket()
+      || (typeof query?.ticket === 'string' ? decodeURIComponent(query.ticket) : '')
   load()
 })
 function manualQuery() {
   uni.redirectTo({ url: '/pages/consultations/query' })
 }
-function syncH5Ticket() {
-  const nextTicket = currentH5Ticket()
-  if (nextTicket === ticket.value)
-    return
-  ticket.value = nextTicket
-  item.value = null
-  load()
-}
-onMounted(() => window.addEventListener('hashchange', syncH5Ticket))
-onUnmounted(() => window.removeEventListener('hashchange', syncH5Ticket))
 </script>
 
 <template>

@@ -1,8 +1,6 @@
 export function currentH5Ticket() {
   // #ifdef H5
-  const query = window.location.hash.split('?')[1] || ''
-  const value = new URLSearchParams(query).get('ticket')
-  return value ? decodeURIComponent(value) : ''
+  return new URLSearchParams(window.location.search).get('ticket') || ''
   // #endif
   // #ifndef H5
   return ''

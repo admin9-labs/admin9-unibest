@@ -1,6 +1,10 @@
 import { isMpWeixin } from '@uni-helper/uni-env'
 
 export function getEnvBaseUrl() {
+  // #ifdef H5
+  return ''
+  // #endif
+  // #ifndef H5
   let baseUrl = import.meta.env.VITE_SERVER_BASEURL
   if (isMpWeixin) {
     const { miniProgram: { envVersion } } = uni.getAccountInfoSync()
@@ -12,4 +16,5 @@ export function getEnvBaseUrl() {
     baseUrl = weixinBaseUrlMap[envVersion] || baseUrl
   }
   return baseUrl
+  // #endif
 }
