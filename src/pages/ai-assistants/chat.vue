@@ -1,7 +1,9 @@
 <script lang="ts" setup>
 import type { AiAssistant, AiChatAnswer, AiFeedbackCategory } from '@/api/ai-assistants'
+import type { StreamTextRenderer } from '@/utils/streamTextRenderer'
 import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
 import { getAiAssistant, getAiFeedbackCategories, streamAiAssistant, submitAiFeedback } from '@/api/ai-assistants'
+import { createStreamTextRenderer } from '@/utils/streamTextRenderer'
 
 definePage({ style: { navigationBarTitleText: 'AI 文旅问答' } })
 
@@ -29,6 +31,7 @@ const asking = ref(false)
 const feedbackSubmitting = ref(false)
 const feedbackSent = ref(false)
 const abortController = ref<AbortController | null>(null)
+let activeTextRenderer: StreamTextRenderer | null = null
 let messageId = 0
 
 const canSend = computed(() => !!question.value.trim() && !asking.value)
@@ -109,16 +112,23 @@ async function runStream(draft: ChatMessage) {
   feedbackSent.value = false
   asking.value = true
   const controller = new AbortController()
+  const textRenderer = createStreamTextRenderer((content) => {
+    draft.answer += content
+    void scrollToLatestMessage()
+  })
   abortController.value = controller
+  activeTextRenderer = textRenderer
   await scrollToLatestMessage()
   try {
     const result = await streamAiAssistant(id.value, draft.question, {
       signal: controller.signal,
       onDelta(content) {
-        draft.answer += content
-        void scrollToLatestMessage()
+        textRenderer.push(content)
       },
     })
+    await textRenderer.drain()
+    if (controller.signal.aborted)
+      throw controller.signal.reason || new DOMException('Aborted', 'AbortError')
     draft.answerData = result
     draft.answer = result.answer
     draft.state = 'complete'
@@ -126,6 +136,7 @@ async function runStream(draft: ChatMessage) {
     await scrollToLatestMessage()
   }
   catch (error) {
+    textRenderer.cancel()
     if (controller.signal.aborted) {
       draft.state = 'cancelled'
     }
@@ -139,6 +150,8 @@ async function runStream(draft: ChatMessage) {
   finally {
     if (abortController.value === controller)
       abortController.value = null
+    if (activeTextRenderer === textRenderer)
+      activeTextRenderer = null
     asking.value = false
   }
 }
@@ -154,6 +167,7 @@ async function retry(target: ChatMessage) {
 }
 
 function stop() {
+  activeTextRenderer?.cancel()
   abortController.value?.abort()
 }
 
@@ -194,7 +208,10 @@ onLoad((query) => {
   id.value = Number.isInteger(parsed) && parsed > 0 ? parsed : null
   load()
 })
-onBeforeUnmount(() => abortController.value?.abort())
+onBeforeUnmount(() => {
+  activeTextRenderer?.cancel()
+  abortController.value?.abort()
+})
 
 // Kept as a page method for existing callers and focused page tests.
 defineExpose({ question, answer, messages, asking, ask, stop, feedback })
