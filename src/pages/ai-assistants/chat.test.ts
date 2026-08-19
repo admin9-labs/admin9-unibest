@@ -93,4 +93,105 @@ describe('ai assistant chat page', () => {
     expect(wrapper.find('.send-button').exists()).toBe(true)
     expect(wrapper.text()).not.toContain('AI 助手暂时无法加载')
   })
+
+  it('pauses automatic following after a user scrolls up and resumes it near the bottom', async () => {
+    vi.useFakeTimers()
+    api.detail.mockResolvedValueOnce({ id: 901, name: '西昌文旅助手', description: null, welcome_message: '您好' })
+    api.categories.mockResolvedValueOnce([])
+    let emitDelta!: (content: string) => void
+    let resolveStream!: (answer: Record<string, unknown>) => void
+    api.stream.mockImplementationOnce((_id: number, _question: string, options: { onDelta: (content: string) => void }) => new Promise((resolve) => {
+      emitDelta = options.onDelta
+      resolveStream = resolve
+    }))
+    const pageScrollTo = vi.fn()
+    Object.assign(uni as unknown as Record<string, unknown>, { pageScrollTo })
+    const wrapper = mount(AiAssistantChat, { global: { stubs: { WdLoading: true, WdEmpty: true, WdButton: true, WdTextarea: { template: '<textarea />' }, WdRadioGroup: true, WdRadio: true, WdIcon: true } } })
+    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ id: '901' })
+    await flushPromises()
+    const page = wrapper.vm as unknown as {
+      question: string
+      ask: () => Promise<void>
+      autoFollow: boolean
+      updateAutoFollowForDistance: (distance: number) => void
+    }
+    page.question = '邛海怎么玩？'
+    const request = page.ask()
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(1)
+    expect(pageScrollTo).toHaveBeenCalledTimes(1)
+
+    page.updateAutoFollowForDistance(121)
+    expect(page.autoFollow).toBe(false)
+    emitDelta('上滑阅读时不应被拉回底部。')
+    await vi.advanceTimersByTimeAsync(600)
+    expect(pageScrollTo).toHaveBeenCalledTimes(1)
+
+    page.updateAutoFollowForDistance(0)
+    expect(page.autoFollow).toBe(true)
+    emitDelta('回到底部后恢复跟随。')
+    await vi.advanceTimersByTimeAsync(96)
+    expect(pageScrollTo.mock.calls.length).toBeLessThanOrEqual(2)
+    expect(pageScrollTo.mock.calls.length).toBeGreaterThan(1)
+
+    resolveStream({ assistant: { id: 901, name: '西昌文旅助手' }, answer: '上滑阅读时不应被拉回底部。回到底部后恢复跟随。', message_reference: 'a'.repeat(64), message_reference_expires_at: '2026-08-14T00:00:00Z', knowledge_used_count: 2 })
+    await vi.runAllTimersAsync()
+    await request
+  })
+
+  it('keeps displayed text on failure and clears the queue before retrying', async () => {
+    vi.useFakeTimers()
+    api.detail.mockResolvedValueOnce({ id: 901, name: '西昌文旅助手', description: null, welcome_message: '您好' })
+    api.categories.mockResolvedValueOnce([])
+    let rejectStream!: (error: Error) => void
+    api.stream
+      .mockImplementationOnce((_id: number, _question: string, options: { onDelta: (content: string) => void }) => new Promise((_, reject) => {
+        options.onDelta('已经显示的内容会被保留，未显示的内容会被清理。')
+        rejectStream = reject
+      }))
+      .mockImplementationOnce(async (_id: number, _question: string, options: { onDelta: (content: string) => void }) => {
+        options.onDelta('重试后的完整回答。')
+        return { assistant: { id: 901, name: '西昌文旅助手' }, answer: '重试后的完整回答。', message_reference: 'b'.repeat(64), message_reference_expires_at: '2026-08-14T00:00:00Z', knowledge_used_count: 1 }
+      })
+    const wrapper = mount(AiAssistantChat, { global: { stubs: { WdLoading: true, WdEmpty: true, WdButton: true, WdTextarea: { template: '<textarea />' }, WdRadioGroup: true, WdRadio: true, WdIcon: true } } })
+    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ id: '901' })
+    await flushPromises()
+    const page = wrapper.vm as unknown as { question: string, ask: () => Promise<void>, retry: (message: unknown) => Promise<void>, messages: Array<{ answer: string }> }
+    page.question = '请介绍邛海'
+    const firstRequest = page.ask()
+    await flushPromises()
+    await vi.advanceTimersByTimeAsync(24)
+    const displayedBeforeFailure = page.messages.at(-1)?.answer || ''
+    expect(displayedBeforeFailure).not.toBe('')
+    rejectStream(new Error('网络暂时不可用'))
+    await firstRequest
+    expect(wrapper.text()).toContain('网络暂时不可用')
+    expect(page.messages.at(-1)?.answer).toBe(displayedBeforeFailure)
+
+    const retryRequest = page.retry(page.messages.at(-1))
+    await vi.runAllTimersAsync()
+    await retryRequest
+    expect(page.messages.at(-1)?.answer).toBe('重试后的完整回答。')
+    expect(wrapper.text()).toContain('回答已完成')
+  })
+
+  it('cancels queued rendering when the chat page unmounts', async () => {
+    vi.useFakeTimers()
+    api.detail.mockResolvedValueOnce({ id: 901, name: '西昌文旅助手', description: null, welcome_message: '您好' })
+    api.categories.mockResolvedValueOnce([])
+    let emitDelta!: (content: string) => void
+    api.stream.mockImplementationOnce((_id: number, _question: string, options: { onDelta: (content: string) => void }) => new Promise(() => {
+      emitDelta = options.onDelta
+    }))
+    const wrapper = mount(AiAssistantChat, { global: { stubs: { WdLoading: true, WdEmpty: true, WdButton: true, WdTextarea: { template: '<textarea />' }, WdRadioGroup: true, WdRadio: true, WdIcon: true } } })
+    vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ id: '901' })
+    await flushPromises()
+    const page = wrapper.vm as unknown as { question: string, ask: () => Promise<void> }
+    page.question = '请介绍邛海'
+    void page.ask()
+    await flushPromises()
+    emitDelta('卸载后不应继续更新已销毁页面。')
+    wrapper.unmount()
+    await vi.runAllTimersAsync()
+  })
 })

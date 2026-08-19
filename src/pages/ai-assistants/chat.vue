@@ -31,17 +31,64 @@ const asking = ref(false)
 const feedbackSubmitting = ref(false)
 const feedbackSent = ref(false)
 const abortController = ref<AbortController | null>(null)
+const autoFollow = ref(true)
+const liveAnnouncement = ref('')
 let activeTextRenderer: StreamTextRenderer | null = null
 let messageId = 0
+let scrollTimer: ReturnType<typeof setTimeout> | null = null
+let scrollScheduled = false
+let lastScrollAt = -96
+let disposed = false
+
+const BOTTOM_FOLLOW_THRESHOLD = 120
+const SCROLL_THROTTLE = 96
 
 const canSend = computed(() => !!question.value.trim() && !asking.value)
 
-async function scrollToLatestMessage() {
-  await nextTick()
-  // The page uses normal document scrolling on H5, so this also keeps the composer
-  // visible after the keyboard resizes the viewport.
+function updateAutoFollowForDistance(distanceFromBottom: number) {
+  autoFollow.value = distanceFromBottom <= BOTTOM_FOLLOW_THRESHOLD
+}
+
+function getDistanceFromBottom() {
+  if (typeof window === 'undefined' || typeof document === 'undefined')
+    return 0
+
+  const scrollingElement = document.scrollingElement || document.documentElement
+  return Math.max(0, scrollingElement.scrollHeight - window.innerHeight - window.scrollY)
+}
+
+function handlePageScroll() {
+  updateAutoFollowForDistance(getDistanceFromBottom())
+}
+
+function performScrollToLatest() {
+  if (disposed || !autoFollow.value)
+    return
+
+  lastScrollAt = Date.now()
   if (typeof uni.pageScrollTo === 'function')
     uni.pageScrollTo({ scrollTop: 999999, duration: 0 })
+}
+
+function scrollToLatestMessage() {
+  if (disposed || !autoFollow.value || scrollScheduled)
+    return
+
+  scrollScheduled = true
+  const delay = Math.max(0, lastScrollAt + SCROLL_THROTTLE - Date.now())
+  if (delay) {
+    scrollTimer = setTimeout(() => {
+      scrollTimer = null
+      scrollScheduled = false
+      void nextTick().then(performScrollToLatest)
+    }, delay)
+    return
+  }
+
+  void nextTick().then(() => {
+    scrollScheduled = false
+    performScrollToLatest()
+  })
 }
 
 async function load() {
@@ -102,6 +149,7 @@ async function ask() {
   }
   messages.value.push(draft)
   question.value = ''
+  autoFollow.value = true
   await runStream(messages.value[messages.value.length - 1])
 }
 
@@ -111,14 +159,15 @@ async function runStream(draft: ChatMessage) {
   answer.value = null
   feedbackSent.value = false
   asking.value = true
+  liveAnnouncement.value = '正在生成回答'
   const controller = new AbortController()
   const textRenderer = createStreamTextRenderer((content) => {
     draft.answer += content
-    void scrollToLatestMessage()
+    scrollToLatestMessage()
   })
   abortController.value = controller
   activeTextRenderer = textRenderer
-  await scrollToLatestMessage()
+  scrollToLatestMessage()
   try {
     const result = await streamAiAssistant(id.value, draft.question, {
       signal: controller.signal,
@@ -133,19 +182,22 @@ async function runStream(draft: ChatMessage) {
     draft.answer = result.answer
     draft.state = 'complete'
     answer.value = result
-    await scrollToLatestMessage()
+    liveAnnouncement.value = '回答已完成'
+    scrollToLatestMessage()
   }
   catch (error) {
     textRenderer.cancel()
     if (controller.signal.aborted) {
       draft.state = 'cancelled'
+      liveAnnouncement.value = '本次回答已停止'
     }
     else {
       draft.state = 'error'
       draft.error = (error as Error).message || '暂时无法回答，请稍后重试'
+      liveAnnouncement.value = '回答失败，可重试'
       uni.showToast({ icon: 'none', title: draft.error })
     }
-    await scrollToLatestMessage()
+    scrollToLatestMessage()
   }
   finally {
     if (abortController.value === controller)
@@ -208,13 +260,20 @@ onLoad((query) => {
   id.value = Number.isInteger(parsed) && parsed > 0 ? parsed : null
   load()
 })
+if (typeof window !== 'undefined')
+  window.addEventListener('scroll', handlePageScroll, { passive: true })
 onBeforeUnmount(() => {
+  disposed = true
   activeTextRenderer?.cancel()
   abortController.value?.abort()
+  if (scrollTimer !== null)
+    clearTimeout(scrollTimer)
+  if (typeof window !== 'undefined')
+    window.removeEventListener('scroll', handlePageScroll)
 })
 
 // Kept as a page method for existing callers and focused page tests.
-defineExpose({ question, answer, messages, asking, ask, stop, feedback })
+defineExpose({ question, answer, messages, asking, autoFollow, ask, stop, retry, feedback, updateAutoFollowForDistance })
 </script>
 
 <template>
@@ -246,7 +305,10 @@ defineExpose({ question, answer, messages, asking, ask, stop, feedback })
         </view>
       </view>
 
-      <view class="messages" aria-live="polite">
+      <view class="messages" aria-live="off">
+        <view class="sr-only" role="status" aria-live="polite">
+          {{ liveAnnouncement }}
+        </view>
         <view v-if="!messages.length" class="empty-conversation">
           <view class="empty-title">
             从一个西昌问题开始
@@ -271,6 +333,7 @@ defineExpose({ question, answer, messages, asking, ask, stop, feedback })
             <view class="bubble assistant-bubble">
               <view v-if="item.answer" class="answer-text">
                 {{ item.answer }}
+                <text v-if="item.state === 'streaming'" class="stream-caret" aria-hidden="true" />
               </view>
               <view v-else-if="item.state === 'streaming'" class="typing">
                 <view /><view /><view />
@@ -441,6 +504,31 @@ defineExpose({ question, answer, messages, asking, ask, stop, feedback })
 }
 .answer-text {
   color: #17211c;
+}
+.stream-caret {
+  display: inline-block;
+  width: 3rpx;
+  height: 28rpx;
+  margin-left: 5rpx;
+  vertical-align: -3rpx;
+  background: var(--lx-color-primary-strong);
+  animation: stream-caret-blink 1s steps(1, end) infinite;
+}
+@keyframes stream-caret-blink {
+  50% {
+    opacity: 0;
+  }
+}
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
 .answer-meta {
   margin-top: 16rpx;
