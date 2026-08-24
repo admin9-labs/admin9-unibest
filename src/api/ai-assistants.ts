@@ -16,6 +16,7 @@ import { getEnvBaseUrl } from '@/utils/baseUrl'
 
 export type AiAssistant = PublicAiAssistantResource
 export type AiChatAnswer = AiChatResource
+export type AiRecommendation = AiChatAnswer['recommendations'][number]
 export type AiFeedbackCategory = AiFeedbackCategoryResource
 export type AiFeedbackInput = SubmitPublicAiFeedbackRequest
 export type AiFeedbackReceipt = AiFeedbackReceiptResource
@@ -54,7 +55,7 @@ export async function askAiAssistant(id: number, message: string) {
     body: { message },
     options: publicOptions,
   })
-  return response.data.chat
+  return normalizeAnswer(response.data.chat)
 }
 
 export async function streamAiAssistant(id: number, message: string, options: AiChatStreamOptions = {}): Promise<AiChatAnswer> {
@@ -94,8 +95,9 @@ export async function streamAiAssistant(id: number, message: string, options: Ai
       throw new Error(envelope.message || 'AI 助手返回了无效结果')
     if (options.signal?.aborted)
       throw options.signal.reason || new DOMException('Aborted', 'AbortError')
-    options.onDelta?.(answer.answer)
-    return answer
+    const normalized = normalizeAnswer(answer)
+    options.onDelta?.(normalized.answer)
+    return normalized
   }
 
   if (!response.body)
@@ -188,10 +190,14 @@ export async function streamAiAssistant(id: number, message: string, options: Ai
 
   if (!complete)
     throw new Error('AI 助手未完成本次回答')
-  return {
+  return normalizeAnswer({
     ...complete,
     assistant: assistant || { id, name: String(id) },
-  }
+  })
+}
+
+function normalizeAnswer(answer: AiChatAnswer): AiChatAnswer {
+  return { ...answer, recommendations: answer.recommendations || [] }
 }
 
 function withAbort<T>(request: Promise<T>, signal?: AbortSignal): Promise<T> {

@@ -1,9 +1,10 @@
 <script lang="ts" setup>
-import type { AiAssistant, AiChatAnswer, AiFeedbackCategory } from '@/api/ai-assistants'
+import type { AiAssistant, AiChatAnswer, AiFeedbackCategory, AiRecommendation } from '@/api/ai-assistants'
 import type { StreamTextRenderer } from '@/utils/streamTextRenderer'
 import { computed, nextTick, onBeforeUnmount, ref } from 'vue'
 import { getAiAssistant, getAiFeedbackCategories, streamAiAssistant, submitAiFeedback } from '@/api/ai-assistants'
 import { createStreamTextRenderer } from '@/utils/streamTextRenderer'
+import AiRecommendationList from './components/AiRecommendationList.vue'
 
 definePage({ style: { navigationBarTitleText: 'AI 文旅问答' } })
 
@@ -255,6 +256,15 @@ function isFeedbackVisible(message: ChatMessage) {
   return message.state === 'complete' && !!message.answerData && !message.feedbackSent && categories.value.length > 0
 }
 
+function openRecommendation(item: AiRecommendation) {
+  const page = {
+    attraction: 'attractions',
+    scenic_spot: 'scenic-spots',
+    travel_route: 'travel-routes',
+  }[item.type]
+  uni.navigateTo({ url: `/pages/${page}/detail?id=${item.id}` })
+}
+
 onLoad((query) => {
   const parsed = Number(query?.id)
   id.value = Number.isInteger(parsed) && parsed > 0 ? parsed : null
@@ -273,7 +283,7 @@ onBeforeUnmount(() => {
 })
 
 // Kept as a page method for existing callers and focused page tests.
-defineExpose({ question, answer, messages, asking, autoFollow, ask, stop, retry, feedback, updateAutoFollowForDistance })
+defineExpose({ question, answer, messages, asking, autoFollow, ask, stop, retry, feedback, openRecommendation, updateAutoFollowForDistance })
 </script>
 
 <template>
@@ -350,6 +360,11 @@ defineExpose({ question, answer, messages, asking, autoFollow, ask, stop, retry,
                   重试
                 </wd-button>
               </view>
+              <AiRecommendationList
+                v-if="item.answerData?.recommendations?.length"
+                :items="item.answerData.recommendations"
+                @select="openRecommendation"
+              />
               <view v-if="item.answerData" class="answer-meta">
                 参考 {{ item.answerData.knowledge_used_count }} 条已审核知识
               </view>
@@ -612,5 +627,15 @@ defineExpose({ question, answer, messages, asking, autoFollow, ask, stop, retry,
   align-self: flex-end;
   width: auto !important;
   min-width: 190rpx;
+}
+
+@media (min-width: 760px) {
+  .assistant-message {
+    max-width: 880px;
+  }
+
+  .user-message {
+    max-width: 720px;
+  }
 }
 </style>

@@ -20,20 +20,41 @@ describe('ai assistant chat page', () => {
     api.stream.mockImplementationOnce(async (_id: number, _question: string, options: { onDelta: (content: string) => void }) => {
       options.onDelta('建议游览')
       options.onDelta('邛海。')
-      return { assistant: { id: 901, name: '西昌文旅助手' }, answer: '建议游览邛海。', message_reference: 'a'.repeat(64), message_reference_expires_at: '2026-08-14T00:00:00Z', knowledge_used_count: 2 }
+      return {
+        assistant: { id: 901, name: '西昌文旅助手' },
+        answer: '建议游览邛海。',
+        message_reference: 'a'.repeat(64),
+        message_reference_expires_at: '2026-08-14T00:00:00Z',
+        knowledge_used_count: 2,
+        recommendations: [{ type: 'scenic_spot', id: 8, title: '唐园文化街区', summary: '适合夜间漫步', cover: null, address: '西昌市建昌古城片区', duration_minutes: null }],
+      }
     })
     api.feedback.mockResolvedValueOnce({ accepted: true, rating: 'helpful', category_id: 91 })
-    const wrapper = mount(AiAssistantChat, { global: { stubs: { WdLoading: true, WdEmpty: true, WdButton: true, WdTextarea: { template: '<textarea />' }, WdRadioGroup: true, WdRadio: true, WdIcon: true } } })
+    const wrapper = mount(AiAssistantChat, { global: { stubs: { WdLoading: true, WdEmpty: true, WdButton: true, WdTextarea: { template: '<textarea />' }, WdRadioGroup: true, WdRadio: true, WdIcon: true, WdImg: true } } })
     vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ id: '901' })
     await flushPromises()
-    const page = wrapper.vm as unknown as { question: string, ask: () => Promise<void>, feedback: (message: unknown, rating: 'helpful' | 'unhelpful') => Promise<void>, messages: Array<{ answerData: unknown }> }
+    const page = wrapper.vm as unknown as {
+      question: string
+      ask: () => Promise<void>
+      feedback: (message: unknown, rating: 'helpful' | 'unhelpful') => Promise<void>
+      openRecommendation: (item: { type: 'attraction' | 'scenic_spot' | 'travel_route', id: number }) => void
+      messages: Array<{ answerData: unknown }>
+    }
     page.question = '邛海怎么玩？'
     const request = page.ask()
     await flushPromises()
     expect(wrapper.text()).not.toContain('建议游览邛海')
+    expect(wrapper.text()).not.toContain('唐园文化街区')
     await vi.runAllTimersAsync()
     await request
     expect(wrapper.text()).toContain('建议游览邛海')
+    expect(wrapper.text()).toContain('唐园文化街区')
+    await wrapper.get('.recommendation-item').trigger('click')
+    expect(uni.navigateTo).toHaveBeenCalledWith({ url: '/pages/scenic-spots/detail?id=8' })
+    page.openRecommendation({ type: 'attraction', id: 5 })
+    page.openRecommendation({ type: 'travel_route', id: 7 })
+    expect(uni.navigateTo).toHaveBeenCalledWith({ url: '/pages/attractions/detail?id=5' })
+    expect(uni.navigateTo).toHaveBeenCalledWith({ url: '/pages/travel-routes/detail?id=7' })
     await page.feedback(page.messages.at(-1), 'helpful')
     expect(api.feedback).toHaveBeenCalledWith({ message_reference: 'a'.repeat(64), rating: 'helpful', category_id: 91 })
     expect(wrapper.text()).toContain('反馈已提交')

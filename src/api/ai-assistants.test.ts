@@ -56,7 +56,7 @@ describe('public AI assistant API adapter', () => {
       'event: start\ndata: {"assistant":{"id":901,"name":"旅游助手"}}\n\n',
       'event: delta\ndata: {"content":"邛海"}\n\n',
       'event: delta\ndata: {"content":"适合游览。"}\n\n',
-      'event: complete\ndata: {"answer":"邛海适合游览。","message_reference":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","message_reference_expires_at":"2026-08-14T00:00:00Z","knowledge_used_count":2}\n\n',
+      'event: complete\ndata: {"answer":"邛海适合游览。","message_reference":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","message_reference_expires_at":"2026-08-14T00:00:00Z","knowledge_used_count":2,"recommendations":[{"type":"scenic_spot","id":8,"title":"唐园文化街区","summary":"城市文化街区","cover":null,"address":"西昌市建昌古城片区","duration_minutes":null}]}\n\n',
     ]
     const reader = {
       read: vi.fn()
@@ -75,6 +75,7 @@ describe('public AI assistant API adapter', () => {
     await expect(streamAiAssistant(901, '邛海怎么样？', { onDelta: content => deltas.push(content) })).resolves.toMatchObject({
       answer: '邛海适合游览。',
       knowledge_used_count: 2,
+      recommendations: [{ type: 'scenic_spot', id: 8 }],
       assistant: { id: 901 },
     })
     expect(deltas).toEqual(['邛海', '适合游览。'])
@@ -84,7 +85,7 @@ describe('public AI assistant API adapter', () => {
     const frames = [
       'event: start\r\ndata: {"assistant":{"id":901,"name":"旅游助手"}}\r\n\r\n',
       'event: delta\r\ndata: {"content":"邛海"}\r\n\r\n',
-      `event: complete\r\ndata: {"answer":"邛海","message_reference":"${'a'.repeat(64)}","message_reference_expires_at":"2026-08-14T00:00:00Z","knowledge_used_count":1}\r\n\r\n`,
+      `event: complete\r\ndata: {"answer":"邛海","message_reference":"${'a'.repeat(64)}","message_reference_expires_at":"2026-08-14T00:00:00Z","knowledge_used_count":1,"recommendations":[]}\r\n\r\n`,
     ].join('')
     const splitChunks = frames.split('\r').flatMap((part, index, parts) => (
       index < parts.length - 1 ? [new TextEncoder().encode(`${part}\r`)] : [new TextEncoder().encode(part)]
@@ -140,7 +141,7 @@ describe('public AI assistant API adapter', () => {
       headers: new Headers({ 'content-type': 'application/json' }),
       json: async () => ({ data: { chat: { assistant: { id: 901, name: '旅游助手' }, answer: '回答', message_reference: 'a'.repeat(64), message_reference_expires_at: '2026-08-14T00:00:00Z', knowledge_used_count: 0 } } }),
     }))
-    await expect(streamAiAssistant(901, '问题')).resolves.toMatchObject({ answer: '回答' })
+    await expect(streamAiAssistant(901, '问题')).resolves.toMatchObject({ answer: '回答', recommendations: [] })
   })
 
   it('maps pre-stream rate limits and network failures to actionable messages', async () => {

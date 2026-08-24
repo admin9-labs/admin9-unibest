@@ -10,6 +10,19 @@ export type AiChatResource = {
   message_reference: string;
   message_reference_expires_at: string;
   knowledge_used_count: number;
+  recommendations: {
+    type: 'attraction' | 'scenic_spot' | 'travel_route';
+    id: number;
+    title: string;
+    summary: string | null;
+    cover: {
+      url: string | null;
+      width: number | null;
+      height: number | null;
+    } | null;
+    address: string | null;
+    duration_minutes: number | null;
+  }[];
 };
 
 export type AiFeedbackCategoryResource = {
