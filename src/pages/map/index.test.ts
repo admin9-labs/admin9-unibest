@@ -65,6 +65,7 @@ describe('travel map page', () => {
     await flushPromises()
 
     expect(mocks.getMapPoints).toHaveBeenCalledWith(expect.objectContaining({ mode: 'bbox', limit: 200 }))
+    expect(wrapper.findAll('.filter-option').map(item => item.text())).toEqual(['全部', '景区', '景点', '餐饮', '住宿', '公共服务', '停车'])
     expect(wrapper.text()).toContain('邛海泸山景区')
     await wrapper.findAll('button').find(button => button.text() === '详情')!.trigger('click')
     expect(uni.navigateTo).toHaveBeenCalledWith({ url: '/pages/attractions/detail?id=101' })

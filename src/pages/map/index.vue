@@ -305,13 +305,13 @@ onBeforeUnmount(() => {
     <view class="page-content">
       <view class="toolbar">
         <wd-search v-model="keyword" placeholder="搜索名称或地址" variant="light" hide-cancel :maxlength="120" />
-        <scroll-view class="filters" scroll-x>
+        <view class="filters">
           <view class="filter-row">
             <view v-for="filter in filters" :key="filter.value || 'all'" class="filter-option" :class="{ active: selectedType === filter.value }" @click="selectedType = filter.value">
               {{ filter.label }}
             </view>
           </view>
-        </scroll-view>
+        </view>
       </view>
       <view v-if="loading" class="state-shell">
         <PublicState kind="loading" title="正在加载西昌点位" />
@@ -400,18 +400,19 @@ onBeforeUnmount(() => {
 .filters {
   width: 100%;
   margin-top: 12rpx;
-  white-space: nowrap;
 }
 .filter-row {
-  display: inline-flex;
-  gap: 12rpx;
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 8rpx;
   padding-bottom: 14rpx;
 }
 .filter-option {
-  min-width: 104rpx;
-  padding: 11rpx 20rpx;
+  min-width: 0;
+  padding: 11rpx 6rpx;
   color: var(--lx-color-text-tertiary);
   border-radius: 6px;
+  white-space: nowrap;
   text-align: center;
 }
 .filter-option.active {
@@ -521,6 +522,11 @@ onBeforeUnmount(() => {
 }
 .point.selected {
   background: var(--lx-color-surface);
+}
+@media (max-width: 767px) {
+  .filter-row {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
 }
 @media (min-width: 768px) {
   .page-content {
