@@ -35,7 +35,9 @@ const journeyStages: JourneyStage[] = [
     title: '在途服务',
     entries: [
       { title: '地图导览', icon: 'locate', url: '/pages/map/index' },
-      { title: '旅游服务', icon: 'phone', url: '/pages/public-services/index' },
+      { title: '服务信息', icon: 'public', url: '/pages/services/index' },
+      { title: '停车设施', icon: 'pushpin', url: '/pages/parking-facilities/index' },
+      { title: '公共服务', icon: 'phone', url: '/pages/public-services/index' },
       { title: 'AI 文旅助手', icon: 'robot', url: '/pages/ai-assistants/index' },
     ],
   },
@@ -271,6 +273,14 @@ function open(url: string) {
   border-left: 1px solid var(--lx-color-border);
 }
 
+.journey-stage--3 .home-entry:nth-child(3n + 1) {
+  border-left: 0;
+}
+
+.journey-stage--3 .home-entry:nth-child(n + 4) {
+  border-top: 1px solid var(--lx-color-border);
+}
+
 @media (min-width: 760px) {
   .home-page {
     padding: 24px;
@@ -307,6 +317,19 @@ function open(url: string) {
 
   .journey-stage--2 .home-entry:last-child {
     border-right: 0;
+  }
+
+  .journey-stage--3 .stage-entries {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .journey-stage--3 .home-entry:nth-child(n) {
+    border-top: 0;
+    border-left: 1px solid var(--lx-color-border);
+  }
+
+  .journey-stage--3 .home-entry:first-child {
+    border-left: 0;
   }
 }
 

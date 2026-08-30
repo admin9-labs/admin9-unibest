@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest'
 import Home from './index.vue'
 
 describe('home page', () => {
-  it('keeps all ten business entries and their existing routes', async () => {
+  it('keeps all twelve primary business entries and their existing routes', async () => {
     const wrapper = mount(Home, {
       global: {
         stubs: {
@@ -23,6 +23,8 @@ describe('home page', () => {
       '/pages/restaurants/index',
       '/pages/accommodations/index',
       '/pages/map/index',
+      '/pages/services/index',
+      '/pages/parking-facilities/index',
       '/pages/public-services/index',
       '/pages/ai-assistants/index',
     ]
@@ -39,6 +41,9 @@ describe('home page', () => {
     expect(wrapper.text()).toContain('发现目的地')
     expect(wrapper.text()).toContain('规划到访')
     expect(wrapper.text()).toContain('在途服务')
+    expect(wrapper.text()).toContain('服务信息')
+    expect(wrapper.text()).toContain('停车设施')
+    expect(wrapper.text()).toContain('公共服务')
     expect(wrapper.text()).not.toContain('旅享西昌')
     expect(wrapper.text()).not.toContain('景区、景点与行程灵感')
     expect(wrapper.findAll('.entry-arrow')).toHaveLength(0)
