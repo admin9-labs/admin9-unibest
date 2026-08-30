@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createLatestMapRequestGate, getMapPoints, getNearbyMapPoints, markerDisplayMode } from './map-points'
+import { createLatestMapRequestGate, getMapPoints, getNearbyCenterMapPoints, getNearbyMapPoints, markerDisplayMode } from './map-points'
 
 const request = vi.hoisted(() => vi.fn())
 vi.mock('@/service/mapPoint', () => ({ publicMapPointsUsingGet: request }))
@@ -81,6 +81,64 @@ describe('map point API adapter', () => {
     expect(request).toHaveBeenLastCalledWith(expect.objectContaining({ params: expect.objectContaining({ cursor: 'page-2', limit: 100 }) }))
     expect(result.points).toHaveLength(101)
     expect(markerDisplayMode(result.points.length, result.meta.has_more)).toBe('cluster')
+  })
+
+  it('queries a verified GCJ-02 center with filters and preserves them across cursor pages', async () => {
+    const mapPoint = {
+      type: 'restaurant' as const,
+      id: 31,
+      name: '古城餐饮',
+      address: '建昌东路',
+      latitude: 27.894,
+      longitude: 102.2725,
+      coordinate_system: 'GCJ-02' as const,
+      map_eligible: true as const,
+      map_ineligible_reason: null,
+      detail_url: '/pages/restaurants/detail?id=31',
+      distance_meters: 120,
+      distance_mode: 'straight_line' as const,
+      is_directly_related: false,
+      route_node_id: null,
+      route_node_name: null,
+      route_node_type: null,
+      route_node_position: null,
+    }
+    request
+      .mockResolvedValueOnce({
+        data: [mapPoint],
+        meta: { pagination: 'cursor', next_cursor: 'center-page-2', page_size: 100, has_more: true, mode: 'nearby', coordinate_system: 'GCJ-02', distance_mode: 'straight_line' },
+      })
+      .mockResolvedValueOnce({
+        data: [{ ...mapPoint, id: 32, detail_url: '/pages/restaurants/detail?id=32', distance_meters: 240 }],
+        meta: { pagination: 'cursor', next_cursor: null, page_size: 100, has_more: false, mode: 'nearby', coordinate_system: 'GCJ-02', distance_mode: 'straight_line' },
+      })
+
+    const result = await getNearbyCenterMapPoints(
+      { latitude: 27.894, longitude: 102.2725 },
+      { radius: 3000, types: ['restaurant'], keyword: '古城' },
+    )
+
+    expect(request).toHaveBeenNthCalledWith(1, expect.objectContaining({ params: {
+      mode: 'nearby',
+      center_latitude: 27.894,
+      center_longitude: 102.2725,
+      coordinate_system: 'GCJ-02',
+      radius: 3000,
+      types: 'restaurant',
+      keyword: '古城',
+      limit: 100,
+    } }))
+    expect(request).toHaveBeenNthCalledWith(2, expect.objectContaining({ params: expect.objectContaining({
+      center_latitude: 27.894,
+      center_longitude: 102.2725,
+      coordinate_system: 'GCJ-02',
+      radius: 3000,
+      types: 'restaurant',
+      keyword: '古城',
+      cursor: 'center-page-2',
+    }) }))
+    expect(result.points).toHaveLength(2)
+    expect(result.points.every(point => point.route_node_id === null)).toBe(true)
   })
 
   it('accepts only the latest map response after fast viewport changes', () => {

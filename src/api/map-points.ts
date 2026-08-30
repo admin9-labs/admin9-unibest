@@ -31,6 +31,12 @@ export interface MapPointResult {
   meta: PublicMapPointsUsingGetResponse['meta']
 }
 
+export interface NearbyCenterOptions {
+  radius?: number
+  types?: MapPointType[]
+  keyword?: string
+}
+
 const typeNames: Record<MapPointType, string> = {
   attraction: '景区',
   scenic_spot: '景点',
@@ -73,14 +79,7 @@ export async function getMapPoints(params: PublicMapPointsUsingGetParams): Promi
   }
 }
 
-export async function getNearbyMapPoints(anchorType: MapAnchorType, anchorId: number, radius?: number) {
-  const params: PublicMapPointsUsingGetParams = {
-    mode: 'nearby',
-    anchor_type: anchorType,
-    anchor_id: anchorId,
-    radius,
-    limit: 100,
-  }
+async function getNearbyPages(params: PublicMapPointsUsingGetParams): Promise<MapPointResult> {
   const first = await getMapPoints(params)
   if (!first.meta.has_more || !first.meta.next_cursor)
     return first
@@ -90,6 +89,29 @@ export async function getNearbyMapPoints(anchorType: MapAnchorType, anchorId: nu
     points: [...first.points, ...second.points],
     meta: second.meta,
   }
+}
+
+export function getNearbyMapPoints(anchorType: MapAnchorType, anchorId: number, radius?: number) {
+  return getNearbyPages({
+    mode: 'nearby',
+    anchor_type: anchorType,
+    anchor_id: anchorId,
+    radius,
+    limit: 100,
+  })
+}
+
+export function getNearbyCenterMapPoints(center: { latitude: number, longitude: number }, options: NearbyCenterOptions = {}) {
+  return getNearbyPages({
+    mode: 'nearby',
+    center_latitude: center.latitude,
+    center_longitude: center.longitude,
+    coordinate_system: 'GCJ-02',
+    radius: options.radius,
+    types: options.types?.join(','),
+    keyword: options.keyword,
+    limit: 100,
+  })
 }
 
 export type MarkerDisplayMode = 'raw' | 'cluster' | 'too_many'

@@ -26,6 +26,8 @@ export interface TencentMarkerGeometry {
   properties?: { title: string }
 }
 
+export const currentLocationMarkerId = 'current-location'
+
 export interface TencentMapApi {
   LatLng: new (latitude: number, longitude: number) => TencentLatLng
   Map: new (container: HTMLElement, options: { center: TencentLatLng, zoom: number }) => TencentMapInstance

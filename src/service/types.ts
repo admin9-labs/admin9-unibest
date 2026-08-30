@@ -1593,6 +1593,7 @@ export type PublicMapPointsUsingGetParams = {
   anchor_id?: number | null;
   center_latitude?: number | null;
   center_longitude?: number | null;
+  coordinate_system?: 'GCJ-02' | null;
   radius?: number;
   south?: number;
   west?: number;
