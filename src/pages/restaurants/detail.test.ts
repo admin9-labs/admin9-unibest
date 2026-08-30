@@ -18,7 +18,7 @@ function mountPage() {
 
 describe('restaurant detail page', () => {
   it('supports direct loading, phone, location, and published relations', async () => {
-    getRestaurant.mockResolvedValueOnce({ id: 601, name: '西昌火盆烧烤', summary: '本地风味', description: '围炉而坐', category: { id: 61, name: '烧烤' }, address: '西昌市海滨路', latitude: 27.85, longitude: 102.26, cover: null, gallery: [{ url: '/food-1.jpg' }, { url: '/food-2.jpg' }], phone: '0834-1234567', opening_hours: '10:00-22:00', average_price: 68, signature_dishes: ['小猪肉'], attraction: { id: 101, name: '邛海泸山景区' }, scenic_spot: null })
+    getRestaurant.mockResolvedValueOnce({ id: 601, name: '西昌火盆烧烤', summary: '本地风味', description: '围炉而坐', category: { id: 61, name: '烧烤' }, address: '西昌市海滨路', latitude: 27.85, longitude: 102.26, coordinate_system: 'GCJ-02', map_eligible: true, map_ineligible_reason: null, cover: null, gallery: [{ url: '/food-1.jpg' }, { url: '/food-2.jpg' }], phone: '0834-1234567', opening_hours: '10:00-22:00', average_price: 68, signature_dishes: ['小猪肉'], attraction: { id: 101, name: '邛海泸山景区' }, scenic_spot: null })
     const previewImage = vi.fn()
     Object.assign(uni, { previewImage })
     const wrapper = mountPage()

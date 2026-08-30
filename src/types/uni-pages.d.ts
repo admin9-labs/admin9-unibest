@@ -30,6 +30,8 @@ type _LocationUrl =
   "/pages/consultations/submit" |
   "/pages/map/index" |
   "/pages/me/me" |
+  "/pages/parking-facilities/detail" |
+  "/pages/parking-facilities/index" |
   "/pages/public-services/index" |
   "/pages/restaurants/detail" |
   "/pages/restaurants/index" |

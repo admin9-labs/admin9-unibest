@@ -4,6 +4,7 @@ import type { HttpError } from '@/http/types'
 import { ref } from 'vue'
 import { getScenicSpot } from '@/api/scenic-spots'
 import DestinationVisitInfo from '@/components/DestinationVisitInfo.vue'
+import NearbyPlaces from '@/components/NearbyPlaces.vue'
 import PublicContentBody from '@/components/PublicContentBody.vue'
 import PublicDetailCover from '@/components/PublicDetailCover.vue'
 import PublicDetailHeading from '@/components/PublicDetailHeading.vue'
@@ -73,6 +74,7 @@ onLoad((query) => {
           <PublicDetailHeading :title="scenicSpot.name" :summary="scenicSpot.summary" />
           <DestinationVisitInfo :address="scenicSpot.address" :opening-hours="scenicSpot.opening_hours" :phone="scenicSpot.phone" @call="callPhone" />
           <PublicContentBody title="景点介绍" :content="scenicSpot.description" />
+          <NearbyPlaces anchor-type="scenic_spot" :anchor-id="scenicSpot.id" :eligible="scenicSpot.map_eligible" />
         </view>
       </view>
     </template>

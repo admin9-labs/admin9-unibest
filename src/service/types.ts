@@ -580,6 +580,12 @@ export type ConsultationsUsingPostResponses = {
   500: ConsultationsUsingPostResponse;
 };
 
+export enum Coordinate_systemEnum {
+  'GCJ-02' = 'GCJ-02',
+}
+
+export type ICoordinate_systemEnum = keyof typeof Coordinate_systemEnum;
+
 export type DiningPlaceResource = {
   id: number;
   name: string;
@@ -592,6 +598,17 @@ export type DiningPlaceResource = {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  coordinate_system: string | null;
+  map_eligible: boolean;
+  map_ineligible_reason:
+    | 'not_published'
+    | 'approval_required'
+    | 'coordinates_missing'
+    | 'coordinates_partial'
+    | 'coordinates_invalid'
+    | 'coordinate_unverified'
+    | 'coordinate_system_unsupported'
+    | null;
   cover: {
     url: string;
     width: number | null;
@@ -628,6 +645,17 @@ export type LodgingPlaceResource = {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  coordinate_system: string | null;
+  map_eligible: boolean;
+  map_ineligible_reason:
+    | 'not_published'
+    | 'approval_required'
+    | 'coordinates_missing'
+    | 'coordinates_partial'
+    | 'coordinates_invalid'
+    | 'coordinate_unverified'
+    | 'coordinate_system_unsupported'
+    | null;
   cover: {
     url: string;
     width: number | null;
@@ -658,6 +686,32 @@ export type LoginRequest = {
   password: string;
 };
 
+export type MapPointResource = {
+  type:
+    | 'attraction'
+    | 'scenic_spot'
+    | 'restaurant'
+    | 'accommodation'
+    | 'service_information'
+    | 'parking_facility';
+  id: number;
+  name: string;
+  address: string | null;
+  latitude: number;
+  longitude: number;
+  coordinate_system: 'GCJ-02';
+  map_eligible: boolean;
+  map_ineligible_reason: null;
+  detail_url: string;
+  distance_meters: number | null;
+  distance_mode: 'straight_line' | null;
+  is_directly_related: boolean;
+  route_node_id: number | null;
+  route_node_name: string | null;
+  route_node_type: 'attraction' | 'scenic_spot' | null;
+  route_node_position: number | null;
+};
+
 export type MemberResource = {
   id: number;
   name: string | null;
@@ -673,6 +727,32 @@ export enum Node_typeEnum {
 }
 
 export type INode_typeEnum = keyof typeof Node_typeEnum;
+
+export type ParkingFacilityResource = {
+  id: number;
+  name: string;
+  type: 'parking_lot' | 'parking_point';
+  summary: string | null;
+  description: string | null;
+  address: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  coordinate_system: string | null;
+  map_eligible: boolean;
+  map_ineligible_reason:
+    | 'not_published'
+    | 'approval_required'
+    | 'coordinates_missing'
+    | 'coordinates_partial'
+    | 'coordinates_invalid'
+    | 'coordinate_unverified'
+    | 'coordinate_system_unsupported'
+    | null;
+  opening_hours: string | null;
+  fee_info: string | null;
+  phone: string | null;
+  total_spaces: number | null;
+};
 
 export type PublicAccommodationsAccommodationUsingGetParams = {
   /** The accommodation ID */
@@ -1497,6 +1577,157 @@ export type PublicConsultationsUsingPostResponses = {
   500: PublicConsultationsUsingPostResponse;
 };
 
+export type PublicMapPointsUsingGetParams = {
+  mode: 'bbox' | 'nearby';
+  types?: string | null;
+  keyword?: string | null;
+  anchor_type?:
+    | 'attraction'
+    | 'scenic_spot'
+    | 'restaurant'
+    | 'accommodation'
+    | 'service_information'
+    | 'parking_facility'
+    | 'travel_route'
+    | null;
+  anchor_id?: number | null;
+  center_latitude?: number | null;
+  center_longitude?: number | null;
+  radius?: number;
+  south?: number;
+  west?: number;
+  north?: number;
+  east?: number;
+  limit?: number;
+  cursor?: string | null;
+};
+
+export type PublicMapPointsUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: MapPointResource[];
+  /** UUID7 for request tracing */
+  request_id: string;
+  meta: {
+    pagination: 'cursor';
+    next_cursor: string | null;
+    page_size: number;
+    has_more: boolean;
+    mode: 'bbox' | 'nearby';
+    coordinate_system: 'GCJ-02';
+    distance_mode: 'straight_line' | null;
+  };
+};
+
+export type PublicMapPointsUsingGetResponses = {
+  /**
+   * Array of `MapPointResource`
+   */
+  200: PublicMapPointsUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: PublicMapPointsUsingGetResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicMapPointsUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicMapPointsUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicMapPointsUsingGetResponse;
+};
+
+export type PublicParkingFacilitiesParkingFacilityUsingGetParams = {
+  /** The parking facility ID */
+  parkingFacility: number;
+};
+
+export type PublicParkingFacilitiesParkingFacilityUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: {
+    parking_facility: ParkingFacilityResource;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicParkingFacilitiesParkingFacilityUsingGetResponses = {
+  200: PublicParkingFacilitiesParkingFacilityUsingGetResponse;
+  /**
+   * Not Found
+   */
+  404: PublicParkingFacilitiesParkingFacilityUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicParkingFacilitiesParkingFacilityUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicParkingFacilitiesParkingFacilityUsingGetResponse;
+};
+
+export type PublicParkingFacilitiesUsingGetParams = {
+  page?: number;
+  page_size?: number;
+  keyword?: string | null;
+  type?: 'parking_lot' | 'parking_point' | null;
+};
+
+export type PublicParkingFacilitiesUsingGetResponse = {
+  /** Whether the request was successful */
+  success: boolean;
+  /** Business status code, 0 = success */
+  code: number;
+  message: string;
+  data: ParkingFacilityResource[];
+  meta: {
+    /** Pagination strategy */
+    pagination: string;
+    /** Current page number */
+    page: number;
+    /** Items per page */
+    page_size: number;
+    /** Whether more pages exist */
+    has_more: boolean;
+    /** Total number of items */
+    total: number;
+  };
+  /** UUID7 for request tracing */
+  request_id: string;
+};
+
+export type PublicParkingFacilitiesUsingGetResponses = {
+  /**
+   * Paginated list
+   */
+  200: PublicParkingFacilitiesUsingGetResponse;
+  /**
+   * Unprocessable Content
+   */
+  422: PublicParkingFacilitiesUsingGetResponse;
+  /**
+   * Too Many Requests
+   */
+  429: PublicParkingFacilitiesUsingGetResponse;
+  /**
+   * Internal Server Error
+   */
+  500: PublicParkingFacilitiesUsingGetResponse;
+};
+
 export type PublicRestaurantsRestaurantUsingGetParams = {
   /** The restaurant ID */
   restaurant: number;
@@ -1953,6 +2184,17 @@ export type TourismAreaResource = {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  coordinate_system: string | null;
+  map_eligible: boolean;
+  map_ineligible_reason:
+    | 'not_published'
+    | 'approval_required'
+    | 'coordinates_missing'
+    | 'coordinates_partial'
+    | 'coordinates_invalid'
+    | 'coordinate_unverified'
+    | 'coordinate_system_unsupported'
+    | null;
   cover: {
     url: string | null;
     width: number | null;
@@ -1972,6 +2214,17 @@ export type TourismDestinationResource = {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  coordinate_system: string | null;
+  map_eligible: boolean;
+  map_ineligible_reason:
+    | 'not_published'
+    | 'approval_required'
+    | 'coordinates_missing'
+    | 'coordinates_partial'
+    | 'coordinates_invalid'
+    | 'coordinate_unverified'
+    | 'coordinate_system_unsupported'
+    | null;
   cover: {
     url: string | null;
     width: number | null;
@@ -2003,6 +2256,24 @@ export type TourismRouteResource = {
   nodes?: TourismRouteNodeResource[];
 };
 
+export enum TypeEnum {
+  'attraction' = 'attraction',
+  'scenic_spot' = 'scenic_spot',
+  'restaurant' = 'restaurant',
+  'accommodation' = 'accommodation',
+  'service_information' = 'service_information',
+  'parking_facility' = 'parking_facility',
+}
+
+export type ITypeEnum = keyof typeof TypeEnum;
+
+export enum TypeEnum2 {
+  'parking_lot' = 'parking_lot',
+  'parking_point' = 'parking_point',
+}
+
+export type ITypeEnum2 = keyof typeof TypeEnum2;
+
 export type VisitorServiceResource = {
   id: number;
   title: string;
@@ -2017,6 +2288,17 @@ export type VisitorServiceResource = {
   address: string | null;
   latitude: number | null;
   longitude: number | null;
+  coordinate_system: string | null;
+  map_eligible: boolean;
+  map_ineligible_reason:
+    | 'not_published'
+    | 'approval_required'
+    | 'coordinates_missing'
+    | 'coordinates_partial'
+    | 'coordinates_invalid'
+    | 'coordinate_unverified'
+    | 'coordinate_system_unsupported'
+    | null;
   phone: string | null;
   service_hours: string | null;
   cover: {

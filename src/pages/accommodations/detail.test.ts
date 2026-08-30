@@ -18,7 +18,7 @@ function mountPage() {
 
 describe('accommodation detail page', () => {
   it('supports direct loading, facilities, phone, location, and relations', async () => {
-    getAccommodation.mockResolvedValueOnce({ id: 701, name: '邛海湖畔酒店', summary: '临湖而居', description: '本地住宿', category: { id: 71, name: '酒店' }, address: '西昌市海滨路', latitude: 27.85, longitude: 102.26, cover: null, gallery: [{ url: '/room-1.jpg' }, { url: '/room-2.jpg' }], phone: '0834-1234567', check_in_time: '14:00', check_out_time: '12:00', reference_price: 398, facilities: ['无线网络'], attraction: { id: 101, name: '邛海泸山景区' }, scenic_spot: null })
+    getAccommodation.mockResolvedValueOnce({ id: 701, name: '邛海湖畔酒店', summary: '临湖而居', description: '本地住宿', category: { id: 71, name: '酒店' }, address: '西昌市海滨路', latitude: 27.85, longitude: 102.26, coordinate_system: 'GCJ-02', map_eligible: true, map_ineligible_reason: null, cover: null, gallery: [{ url: '/room-1.jpg' }, { url: '/room-2.jpg' }], phone: '0834-1234567', check_in_time: '14:00', check_out_time: '12:00', reference_price: 398, facilities: ['无线网络'], attraction: { id: 101, name: '邛海泸山景区' }, scenic_spot: null })
     const previewImage = vi.fn()
     Object.assign(uni, { previewImage })
     const wrapper = mountPage()

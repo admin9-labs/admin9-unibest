@@ -19,9 +19,10 @@ describe('public service entry', () => {
     expect(uni.navigateTo).toHaveBeenNthCalledWith(2, { url: '/pages/complaints/query' })
     expect(uni.navigateTo).toHaveBeenNthCalledWith(3, { url: '/pages/complaints/member-list' })
     expect(uni.navigateTo).toHaveBeenNthCalledWith(4, { url: '/pages/services/index' })
-    expect(uni.navigateTo).toHaveBeenNthCalledWith(5, { url: '/pages/consultations/submit' })
-    expect(uni.navigateTo).toHaveBeenNthCalledWith(6, { url: '/pages/consultations/query' })
-    expect(uni.navigateTo).toHaveBeenNthCalledWith(7, { url: '/pages/consultations/member-list' })
+    expect(uni.navigateTo).toHaveBeenNthCalledWith(5, { url: '/pages/parking-facilities/index' })
+    expect(uni.navigateTo).toHaveBeenNthCalledWith(6, { url: '/pages/consultations/submit' })
+    expect(uni.navigateTo).toHaveBeenNthCalledWith(7, { url: '/pages/consultations/query' })
+    expect(uni.navigateTo).toHaveBeenNthCalledWith(8, { url: '/pages/consultations/member-list' })
   })
 
   it('keeps guest credentials and login boundaries visible without redundant row chrome', () => {

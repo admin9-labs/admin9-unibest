@@ -6,6 +6,11 @@ interface TencentLatLng {
 interface TencentMapInstance {
   setCenter: (position: TencentLatLng) => void
   setZoom: (zoom: number) => void
+  getBounds?: () => {
+    getSouthWest?: () => TencentLatLng
+    getNorthEast?: () => TencentLatLng
+  }
+  on?: (event: 'bounds_changed', listener: () => void) => void
   destroy?: () => void
 }
 

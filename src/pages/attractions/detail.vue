@@ -4,6 +4,7 @@ import type { HttpError } from '@/http/types'
 import { ref } from 'vue'
 import { getAttraction } from '@/api/attractions'
 import DestinationVisitInfo from '@/components/DestinationVisitInfo.vue'
+import NearbyPlaces from '@/components/NearbyPlaces.vue'
 import PublicContentBody from '@/components/PublicContentBody.vue'
 import PublicDetailCover from '@/components/PublicDetailCover.vue'
 import PublicDetailHeading from '@/components/PublicDetailHeading.vue'
@@ -97,6 +98,7 @@ onLoad((query) => {
               </view>
             </view>
           </view>
+          <NearbyPlaces anchor-type="attraction" :anchor-id="attraction.id" :eligible="attraction.map_eligible" />
         </view>
       </view>
     </template>

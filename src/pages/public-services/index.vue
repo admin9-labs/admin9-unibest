@@ -60,6 +60,15 @@ function open(url: string) {
               </view>
             </view>
           </view>
+          <view class="entry" role="link" hover-class="entry--pressed" @click="open('/pages/parking-facilities/index')">
+            <view>
+              <view class="entry-title">
+                停车设施
+              </view><view class="entry-copy">
+                停车场、停车点与地图导航
+              </view>
+            </view>
+          </view>
         </view>
       </view>
 

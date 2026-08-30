@@ -2,6 +2,10 @@
 // @ts-ignore
 import * as API from './types';
 
+export function displayCoordinateSystemEnum(field: API.Coordinate_systemEnum) {
+  return { 'GCJ-02': 'GCJ-02' }[field];
+}
+
 export function displayNodeTypeEnum(field: API.Node_typeEnum) {
   return { attraction: 'attraction', scenic_spot: 'scenic_spot' }[field];
 }
@@ -48,4 +52,19 @@ export function displayTargetTypeEnum(field: API.Target_typeEnum) {
     scenic_spot: 'scenic_spot',
     travel_route: 'travel_route',
   }[field];
+}
+
+export function displayTypeEnum(field: API.TypeEnum) {
+  return {
+    attraction: 'attraction',
+    scenic_spot: 'scenic_spot',
+    restaurant: 'restaurant',
+    accommodation: 'accommodation',
+    service_information: 'service_information',
+    parking_facility: 'parking_facility',
+  }[field];
+}
+
+export function displayTypeEnum2(field: API.TypeEnum2) {
+  return { parking_lot: 'parking_lot', parking_point: 'parking_point' }[field];
 }

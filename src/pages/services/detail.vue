@@ -3,6 +3,7 @@ import type { ServiceInformation } from '@/api/service-information'
 import type { HttpError } from '@/http/types'
 import { computed, ref } from 'vue'
 import { getServiceInformationDetail } from '@/api/service-information'
+import NearbyPlaces from '@/components/NearbyPlaces.vue'
 import PublicContentBody from '@/components/PublicContentBody.vue'
 import PublicDetailCover from '@/components/PublicDetailCover.vue'
 import PublicDetailHeading from '@/components/PublicDetailHeading.vue'
@@ -15,7 +16,7 @@ const item = ref<ServiceInformation | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
 const failed = ref(false)
-const hasLocation = computed(() => Boolean(item.value && item.value.latitude !== null && item.value.longitude !== null))
+const hasLocation = computed(() => Boolean(item.value?.map_eligible))
 
 async function load() {
   if (id.value === null) {
@@ -108,6 +109,7 @@ onLoad((query) => {
           </view>
         </view>
         <PublicContentBody title="服务说明" :content="item.content" />
+        <NearbyPlaces anchor-type="service_information" :anchor-id="item.id" :eligible="item.map_eligible" />
         <view v-if="item.attachments.length" class="section">
           <view class="section-title">
             相关资料

@@ -1,8 +1,9 @@
 <script lang="ts" setup>
 import type { TravelRoute } from '@/api/travel-routes'
 import type { HttpError } from '@/http/types'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { getTravelRoute } from '@/api/travel-routes'
+import NearbyPlaces from '@/components/NearbyPlaces.vue'
 import PublicContentBody from '@/components/PublicContentBody.vue'
 import PublicDetailCover from '@/components/PublicDetailCover.vue'
 import PublicDetailHeading from '@/components/PublicDetailHeading.vue'
@@ -16,6 +17,7 @@ const route = ref<TravelRoute | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
 const failed = ref(false)
+const hasLocatedNode = computed(() => route.value?.nodes?.some(node => node.target.map_eligible) ?? false)
 
 async function load() {
   if (id.value === null) {
@@ -105,6 +107,7 @@ onLoad((query) => {
             </view>
           </view>
           <PublicContentBody title="线路说明" :content="route.description" />
+          <NearbyPlaces anchor-type="travel_route" :anchor-id="route.id" :eligible="hasLocatedNode" title="线路节点周边" />
         </view>
       </view>
     </template>

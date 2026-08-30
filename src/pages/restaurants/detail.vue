@@ -3,6 +3,7 @@ import type { Restaurant } from '@/api/restaurants'
 import type { HttpError } from '@/http/types'
 import { computed, ref } from 'vue'
 import { getRestaurant } from '@/api/restaurants'
+import NearbyPlaces from '@/components/NearbyPlaces.vue'
 import PublicContentBody from '@/components/PublicContentBody.vue'
 import PublicDetailCover from '@/components/PublicDetailCover.vue'
 import PublicDetailHeading from '@/components/PublicDetailHeading.vue'
@@ -16,7 +17,7 @@ const loading = ref(true)
 const notFound = ref(false)
 const failed = ref(false)
 const gallery = computed(() => restaurant.value?.gallery?.map(item => item.url) ?? [])
-const hasLocation = computed(() => Boolean(restaurant.value && restaurant.value.latitude !== null && restaurant.value.longitude !== null))
+const hasLocation = computed(() => Boolean(restaurant.value?.map_eligible))
 
 async function load() {
   if (id.value === null) {
@@ -159,6 +160,7 @@ onLoad((query) => {
             </view>
           </view>
         </view>
+        <NearbyPlaces anchor-type="restaurant" :anchor-id="restaurant.id" :eligible="restaurant.map_eligible" />
       </view>
     </template>
   </view>

@@ -11,6 +11,8 @@ export * from './audioGuide';
 export * from './auth';
 export * from './complaint';
 export * from './consultation';
+export * from './mapPoint';
+export * from './parkingFacility';
 export * from './restaurant';
 export * from './scenicSpot';
 export * from './serviceInformation';

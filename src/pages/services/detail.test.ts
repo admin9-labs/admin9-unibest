@@ -14,7 +14,7 @@ function mountPage() {
 
 describe('service information detail page', () => {
   it('shows rich service details and connects phone, location and safe attachments', async () => {
-    mocks.getServiceInformationDetail.mockResolvedValueOnce({ id: 801, title: '邛海游客服务', type: { id: 81, name: '游客中心' }, provider: '旅享西昌', service_area: '邛海', summary: '便民协助', content: '<h2>服务流程</h2><p>现场咨询</p>', address: '海滨路', latitude: 27.86, longitude: 102.27, phone: '0834-000101', service_hours: '09:00-17:30', cover: null, attachments: [{ name: '服务指南', url: 'https://example.com/guide' }] })
+    mocks.getServiceInformationDetail.mockResolvedValueOnce({ id: 801, title: '邛海游客服务', type: { id: 81, name: '游客中心' }, provider: '旅享西昌', service_area: '邛海', summary: '便民协助', content: '<h2>服务流程</h2><p>现场咨询</p>', address: '海滨路', latitude: 27.86, longitude: 102.27, coordinate_system: 'GCJ-02', map_eligible: true, map_ineligible_reason: null, phone: '0834-000101', service_hours: '09:00-17:30', cover: null, attachments: [{ name: '服务指南', url: 'https://example.com/guide' }] })
     const wrapper = mountPage()
     vi.mocked(onLoad).mock.calls.at(-1)?.[0]?.({ id: '801' })
     await flushPromises()
