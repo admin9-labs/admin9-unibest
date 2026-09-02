@@ -748,6 +748,16 @@ export type ParkingFacilityResource = {
     | 'coordinate_unverified'
     | 'coordinate_system_unsupported'
     | null;
+  cover: {
+    url: string;
+    width: number | null;
+    height: number | null;
+  } | null;
+  gallery: {
+    url: string;
+    width: number | null;
+    height: number | null;
+  }[];
   opening_hours: string | null;
   fee_info: string | null;
   phone: string | null;

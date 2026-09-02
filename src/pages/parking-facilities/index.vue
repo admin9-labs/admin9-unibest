@@ -105,6 +105,16 @@ onLoad(reload)
       </view>
       <view v-else class="list">
         <view v-for="item in visible" :key="item.id" class="item" role="link" @click="openDetail(item.id)">
+          <wd-img
+            v-if="item.cover?.url"
+            class="item-cover"
+            :src="item.cover.url"
+            width="168rpx"
+            height="126rpx"
+            mode="aspectFill"
+            radius="4"
+            lazy-load
+          />
           <view class="item-copy">
             <view class="eyebrow">
               {{ item.type === 'parking_lot' ? '停车场' : '停车点' }}
@@ -168,6 +178,10 @@ onLoad(reload)
 .item-copy {
   min-width: 0;
   flex: 1;
+}
+.item-cover {
+  flex: 0 0 168rpx;
+  overflow: hidden;
 }
 .eyebrow {
   color: var(--lx-color-primary-strong);

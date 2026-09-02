@@ -1,10 +1,11 @@
 <script lang="ts" setup>
 import type { ParkingFacility } from '@/api/parking-facilities'
 import type { HttpError } from '@/http/types'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 import { getParkingFacility } from '@/api/parking-facilities'
 import NearbyPlaces from '@/components/NearbyPlaces.vue'
 import PublicContentBody from '@/components/PublicContentBody.vue'
+import PublicDetailCover from '@/components/PublicDetailCover.vue'
 import PublicDetailHeading from '@/components/PublicDetailHeading.vue'
 import PublicState from '@/components/PublicState.vue'
 
@@ -16,6 +17,7 @@ const item = ref<ParkingFacility | null>(null)
 const loading = ref(true)
 const notFound = ref(false)
 const failed = ref(false)
+const gallery = computed(() => item.value?.gallery.map(image => image.url) ?? [])
 
 async function load() {
   if (id.value === null) {
@@ -49,6 +51,12 @@ function callPhone() {
     uni.makePhoneCall({ phoneNumber: item.value.phone })
 }
 
+function previewGallery(event: { index: number }) {
+  const current = gallery.value[event.index]
+  if (current)
+    uni.previewImage({ current, urls: gallery.value })
+}
+
 onLoad((query) => {
   const value = Number(query?.id)
   id.value = Number.isInteger(value) && value > 0 ? value : null
@@ -67,35 +75,44 @@ onLoad((query) => {
     <view v-else-if="failed" class="state">
       <PublicState kind="network-error" title="停车设施暂时无法加载" action-text="重新加载" @action="load" />
     </view>
-    <view v-else-if="item" class="content">
-      <PublicDetailHeading :title="item.name" :summary="item.summary">
-        <template #badge>
-          <text class="badge">{{ item.type === 'parking_lot' ? '停车场' : '停车点' }}</text>
-        </template>
-      </PublicDetailHeading>
-      <view class="facts">
-        <view v-if="item.address" class="fact">
-          <wd-icon name="location" size="18" /><text>{{ item.address }}</text>
+    <template v-else-if="item">
+      <PublicDetailCover :src="item.cover?.url" />
+      <view class="content">
+        <PublicDetailHeading :title="item.name" :summary="item.summary">
+          <template #badge>
+            <text class="badge">{{ item.type === 'parking_lot' ? '停车场' : '停车点' }}</text>
+          </template>
+        </PublicDetailHeading>
+        <view class="facts">
+          <view v-if="item.address" class="fact">
+            <wd-icon name="location" size="18" /><text>{{ item.address }}</text>
+          </view>
+          <view v-if="item.opening_hours" class="fact">
+            <wd-icon name="clock-circle" size="18" /><text>{{ item.opening_hours }}</text>
+          </view>
+          <view v-if="item.fee_info" class="fact">
+            <wd-icon name="money-circle" size="18" /><text>{{ item.fee_info }}</text>
+          </view>
+          <view v-if="item.total_spaces !== null" class="fact">
+            <wd-icon name="view" size="18" /><text>总车位 {{ item.total_spaces }}</text>
+          </view>
+          <view v-if="item.phone" class="fact action" @click="callPhone">
+            <wd-icon name="phone" size="18" /><text>{{ item.phone }}</text>
+          </view>
+          <view v-if="item.map_eligible" class="fact action" @click="openLocation">
+            <wd-icon name="compass" size="18" /><text>打开地图导航</text>
+          </view>
         </view>
-        <view v-if="item.opening_hours" class="fact">
-          <wd-icon name="clock-circle" size="18" /><text>{{ item.opening_hours }}</text>
+        <PublicContentBody title="设施说明" :content="item.description" />
+        <view v-if="gallery.length" class="section">
+          <view class="section-title">
+            停车设施图集
+          </view>
+          <wd-swiper class="gallery" :list="gallery" height="220" :autoplay="false" radius="8" @click="previewGallery" />
         </view>
-        <view v-if="item.fee_info" class="fact">
-          <wd-icon name="money-circle" size="18" /><text>{{ item.fee_info }}</text>
-        </view>
-        <view v-if="item.total_spaces !== null" class="fact">
-          <wd-icon name="view" size="18" /><text>总车位 {{ item.total_spaces }}</text>
-        </view>
-        <view v-if="item.phone" class="fact action" @click="callPhone">
-          <wd-icon name="phone" size="18" /><text>{{ item.phone }}</text>
-        </view>
-        <view v-if="item.map_eligible" class="fact action" @click="openLocation">
-          <wd-icon name="compass" size="18" /><text>打开地图导航</text>
-        </view>
+        <NearbyPlaces anchor-type="parking_facility" :anchor-id="item.id" :eligible="item.map_eligible" />
       </view>
-      <PublicContentBody title="设施说明" :content="item.description" />
-      <NearbyPlaces anchor-type="parking_facility" :anchor-id="item.id" :eligible="item.map_eligible" />
-    </view>
+    </template>
   </view>
 </template>
 
@@ -136,5 +153,17 @@ onLoad((query) => {
 }
 .fact.action {
   color: var(--lx-color-primary-strong);
+}
+.section {
+  margin-top: 40rpx;
+}
+.section-title {
+  color: var(--lx-color-text-main);
+  font-size: 31rpx;
+  font-weight: 650;
+}
+.gallery {
+  display: block;
+  margin-top: 18rpx;
 }
 </style>
